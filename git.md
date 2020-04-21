@@ -179,7 +179,10 @@ $ git status
 ![1587392211252](git.assets/1587392211252.png)
 
 ```bash
-#参看连接的远程仓库
+#连接远程仓库
+$ git remote add github https://github.com/18258026861/javaNote.git
+
+#查看连接的远程仓库
 # 如果连接不上可以克隆远程仓库（根目录需要是需要空文件）一个然后文件复制进去再上传
 $ git remote -v
 ```
