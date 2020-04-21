@@ -275,7 +275,7 @@ file -> setting -> GitHub
 
 ### 1.pull远程仓库
 
-先将github上的项目pull下来
+先将github上的项目pull下来（如果对比远程仓库有文件缺失需要这一步）
 
 ![1586406085728](git.assets/1586406085728.png)
 
@@ -295,5 +295,70 @@ file -> setting -> GitHub
 
 选择一个push就完成了！
 
-![1586406558738](git.assets/1586406558738.png)
 
+
+### 也可以用IDEA的命令行(比较方便)
+
+```bash
+$ git add .
+$ git commit -m ""
+$ git push
+```
+
+
+
+# Git 分支
+
+分支平时互不干扰，但是某个时间他们会合并，就需要处理一些问题
+
+
+
+
+
+## git 分支指令
+
+```bash
+# 列出所有本地分支
+git branch
+
+# 列出所有远程分支
+git branch -r
+
+# 新建一个分支，但依然停留在当前分支
+git branch [branch-name]
+
+# 新建一个分支，并切换到该分支
+git checkout -b [branch]
+
+# 合并指定分支到当前分支
+$ git merge [branch]
+
+# 删除分支
+$ git branch -d [branch-name]
+
+# 删除远程分支
+$ git push origin --delete [branch-name]
+$ git branch -dr [remote/branch]
+```
+
+
+
+蓝色的代表现在的分支，branch A,创建A分支
+
+![1587444614203](git.assets/1587444614203.png)
+
+## 分支冲突
+
+如果多个分支并行执行，就会导致代码冲突，存在多个版本。例如
+
+user和admin两个分支，
+
+A编写user
+
+B编写admin
+
+A编写时需要用到admin.add文件，那么拿过来用的时候**修改**了这个文件，那么user分支里的admin.add文件就修改了。B可以选择是否将这个修改的文件**合并**到admin分支.
+
+## master主分支
+
+master主分支应该非常稳定，用来发布新版本，一般情况下不允许在上面工作，工作一般情况下在新建的dev分支上工作，工作完后，比如上要发布，或者说dev分支代码稳定后可以合并到主分支master上来。
