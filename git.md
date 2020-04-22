@@ -164,6 +164,9 @@ $ git status
 3.**提交**暂存区的文件到**本地仓库**
 
 ```bash
+#注意，commit -m一定要加上信息，只写git commit 会跳出一个蓝窗，提示你写信息
+# 这时候ins插入，写完信息之后esc推出，再：wq就行了
+
 $ git commit -m  #后面跟的是提交信息
 ```
 
@@ -181,7 +184,8 @@ $ git status
 ```bash
 #连接远程仓库
 $ git remote add github https://github.com/18258026861/javaNote.git
-
+#删除远程仓库
+$ git remote rm origin
 #查看连接的远程仓库
 # 如果连接不上可以克隆远程仓库（根目录需要是需要空文件）一个然后文件复制进去再上传
 $ git remote -v
@@ -194,6 +198,12 @@ $ git remote -v
 ```bash
 # origin是别名，有多个远程仓库可以选择别名上传
 git push origin master  #origin 
+
+# push中出现问题refusing to merge unrelated histories
+
+#这是因为远程仓库已经存在代码记录了，并且那部分代码没有和本地仓库进行关联，我们可以使用如下操作允许pull未关联的远程仓库旧代码：
+
+git pull origin master --allow-unrelated-histories
 ```
 
 ![1587399554664](git.assets/1587399554664.png)
@@ -346,6 +356,12 @@ $ git branch -dr [remote/branch]
 蓝色的代表现在的分支，branch A,创建A分支
 
 ![1587444614203](git.assets/1587444614203.png)
+
+
+
+如果要在远程仓库创建新分支们可以在本地创建一个分支，然后再在远程创建同名分支。
+
+
 
 ## 分支冲突
 
