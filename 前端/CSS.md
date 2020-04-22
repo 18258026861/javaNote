@@ -432,7 +432,7 @@ $=	结尾含有
 
 # 4.美化网页元素
 
-## span标签：
+## span标签
 
 重点要突出的字，用span套起来，约定俗成
 
@@ -612,3 +612,84 @@ a{
 ```
 
 ![1587549605839](CSS.assets/1587549605839.png)
+
+## 背景
+
+```html
+<style>
+        div{
+            width:960px;
+            height: 540px;
+            /*边框的粗细，样式，颜色*/
+            border:1px solid red;
+            /* 设置背景 */
+            background-image: url("img/封面.jpg");
+        }
+        #div1{
+            /*横向平铺*/
+            background-repeat: repeat-x;
+        }
+        #div2{
+            /*纵向平铺*/
+            background-repeat: repeat-y;
+        }
+        #div3{
+            /*不平铺*/
+            background-repeat: no-repeat;
+        }
+    </style>
+```
+
+
+
+结合到列表中，就能插入箭头小图标
+
+```css
+ul li{
+    margin-block: 20px;
+    /*去掉列表前面的小圆点*/
+    list-style: none;
+    /*添加小箭头*/
+    background: url("../img/arrow.png") 200px 10px;
+    background-repeat: no-repeat;
+    /*位置可以直接在url后面加，也可以position设置*/
+    /*background-position: 200px 10px;*/
+}
+```
+
+![1587564137141](CSS.assets/1587564137141.png)
+
+## 渐变
+
+```html
+<style>
+             /*径向渐变，圆形渐变*/
+         body{
+             /*角度  ，当前颜色，最后颜色*/
+             background-image: linear-gradient(19deg,#21D4FD 0%, #B721FF 100%);
+         }
+    </style>
+```
+
+
+
+# 盒子模型
+
+![1587568948229](CSS.assets/1587568948229.png)
+
+- **margin**：外边距
+- **border**：边距
+- **padding**：内边距
+
+## 边框
+
+1.边框粗细
+
+```css
+/*border :粗细，样式，颜色*/
+    border:1px solid red;
+```
+
+2.边框样式
+
+3.边框颜色

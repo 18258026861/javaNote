@@ -1,11 +1,5 @@
 # SSM框架整合
 
-## 注意点
-
-- 几个配置文件需要放在同一个环境内，否则注入时引用会报错
-
-  ![1586966381342](SSM.assets/1586966381342.png)
-
 
 
 **导包**：junit，spring，mybatis,mysql,数据池,springMVC
@@ -469,11 +463,11 @@ public class BookServiceImpl implements IBookService{
 
 
 
+## 注意点
 
+- 几个配置文件需要放在同一个环境内，否则注入时引用会报错
 
-
-
-
+  ![1586966381342](SSM.assets/1586966381342.png)
 
 # 排错思路
 
@@ -1022,4 +1016,5 @@ check the manual that corresponds to your MySQL server version for the right syn
 
 
 
-## 
+ 
+
