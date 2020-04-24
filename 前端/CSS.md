@@ -551,7 +551,7 @@ $=	结尾含有
 
 类似与京东左边的列表
 
-```html
+```css
 /*将标题和列表放在一个div容器中*/
 #nav{
     width: 300px;
@@ -693,3 +693,217 @@ ul li{
 2.边框样式
 
 3.边框颜色
+
+## 内外边距
+
+```css
+body{
+    /*body的默认margin不是0，需要自己设置*/
+    margin: 0;
+    /*上下左右边框，padding同理*/
+    margin: 0 0 0 0 ;
+    /*magin居中
+        前提条件，在一个有宽高的盒子里*/
+    margin: 0 auto;
+}
+```
+
+一个图案在页面上的大小等于magin+border+padding+图案本身
+
+## 圆角
+
+```css
+/*四个角都是50px*/
+            border-radius: 50px;
+            /*左上，右上，右下，左下顺时针,
+            两个值：第一个左上右下，第二个左下右上
+            四个值：相对应*/
+            border-radius: 20px 40px ;
+
+           /*半圆*/
+            border-radius: 50px 50px 0 0;
+            /*高等于半径*/
+            height:50px;
+```
+
+ 
+
+## 阴影
+
+```css
+#loginbox{
+            /*阴影
+            水平偏移，垂直偏移 模糊程度 颜色*/
+            box-shadow: 10px 10px 20px lightcoral;
+        }
+```
+
+![1587614319059](CSS.assets/1587614319059.png)
+
+# 浮动
+
+块元素：h1-h6 p div（自定义）
+
+行元素:span(自定义)
+
+块元素中可以有行元素，反之不行
+
+
+
+## display
+
+```css
+/*display:
+           block:变成块元素
+           inline 行内元素
+           inline-block：块元素，但是可以排成一行
+           none：消失
+            */
+    div{
+        width: 100px;
+        height: 100px;
+        border: 1px solid red;
+        /*变成并排就需要两个都是行元素*/
+        display: inline-block;
+    }
+        span{
+            width: 100px;
+            height: 100px;
+            border: 1px solid red;
+
+            /*本来是行元素，现在变成了块元素*/
+            display: block;
+            display: inline-block;
+
+        }
+```
+
+一种行内元素的排版，很多时候搭配float
+
+## float
+
+```css
+/*浮动，上边对齐  左和右，向页面边框靠拢*/
+            float: left;
+/*clear消除浮动
+                right 右边
+                left 左边
+                both 两侧
+                那么就会另起一行*/
+            clear: both;
+```
+
+![1587621024063](CSS.assets/1587621024063.png)
+
+## 父级边框塌陷
+
+ 只要父级元素下的子元素浮动了，肯定会影响父级元素的边框 ，比如浏览器大小会影响浮动效果
+
+解决放下
+
+1.设置父级高度，不现实，需要一次次调
+
+2.父级元素最后增加一个空div，让他清除两边浮动
+
+```css
+#son3{
+          
+            clear: both;
+        }
+```
+
+3.父级元素使用overflow滚动条
+
+```
+#over{
+            width: 1000px;
+            height: 600px;
+            /*overflow :
+                hidden 超出的隐藏
+                scroll 滚动条*/
+            overflow: scroll;
+        }
+```
+
+![1587630533573](CSS.assets/1587630533573.png)
+
+4.父类添加一个伪类（推荐）
+
+```css
+ /*使用伪类在父类最后插入一个小的div*/
+        #father:after{
+            /*设置成块元素*/
+            display: block;
+            clear: both;
+        }
+```
+
+思路和第二种差不多，但是不用插入div
+
+# 定位
+
+## 相对定位
+
+相对于原来的位置进行偏移，**原来的位置会被保留**
+
+```css
+ /*positon
+            relative 相对定位
+            absolute 绝对定位*/
+            position: relative;
+            /*top距离上边-20px
+                bottom距离下边
+                left距离左边
+                right距离右边*/
+            top: -20px;
+```
+
+
+
+## 绝对定位
+
+基于xx进行偏移，**原来的位置会被其他元素填补**
+
+1.相对于父元素边框定位（父级元素价格position属性就可以了）
+
+2.相对于浏览器边框绝对定位
+
+```css
+position: absolute;
+            /*top距离上边框的距离
+            负数和0一样贴着边框*/
+            right: -5px;
+```
+
+![1587642501274](CSS.assets/1587642501274.png)
+
+观察图，可得即使是负数也是贴着边框，移动的图案的位置被别的元素占据了
+
+
+
+## 固定定位
+
+基于浏览器边框定位，定死在浏览器的某个位置，即使你拖动滚动条也不会变
+
+```css
+/*positon
+            fixed  固定定位*/
+            position: fixed;
+            right: 5px;
+            bottom: 5px;
+```
+
+
+
+## z-index
+
+图层显示，数值越大，显示越优先
+
+```css
+ /*图层*/
+    z-index: 999;
+/*透明度 opacity*/
+    opacity: 0.7;
+```
+
+![1587645151839](CSS.assets/1587645151839.png)
