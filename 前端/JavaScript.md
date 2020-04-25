@@ -585,7 +585,12 @@ var array = [1,2,3,4,2,3];
     f2(4);          //x小于5
 ```
 
+参数可以随意输入
 
+```js
+f1(7,2);       //x大于5，输入多个参数会判断第一个
+    f1();       // 不输入参数会判断else
+```
 
 在函数里可以判断并且抛出异常
 
@@ -600,3 +605,337 @@ var array = [1,2,3,4,2,3];
 
 ![1587743522109](JavaScript.assets/1587743522109.png)
 
+arguements：参数数组
+
+```js
+var f3 = function (x) {
+        /* arguments :传入参数形成的数组
+        *   比如我传入很多参数，但是我接收的第一个参数，而arguements接收的就是全部参数形成的数组*/
+        console.log(x);
+        for(i = 0;i < arguments.length; i++){
+            console.log(arguments[i]);
+        }
+    }
+
+    /*输入多个参数*/
+    f3(2,5,4,7,8);       //实际接收的数是x=2，arguements的数组是2，5，4，7，8
+```
+
+![1587806032087](JavaScript.assets/1587806032087.png)
+
+有这个arguements，又出现了一个新问题，如果我要**获取除了接收的参数以外的其他参数**用于进行其他操作该怎么办
+
+使用ES6 引入的新参数**rest**
+
+```
+/*rest,相当于java的可变参数*/
+    var f4 = function (x,...rest) {
+        console.log(x);
+        console.log(rest);
+    }
+    f4(1,5,7,3);            //x = 1    rest = Array(3) [ 5, 7, 3 ]
+```
+
+
+
+## 变量的作用域
+
+在javascript中，**var变量是有作用域的**
+
+假设在**函数内定义的变量**，在外面是不可以用的，会报错
+
+```js
+function f() {
+        var x = 1;
+    }
+    console.log(x);         //报错：ReferenceError: x is not defined
+```
+
+两个函数内的变量互不相干，可以同名
+
+```js
+*   f1函数也可以使用x变量*/
+    function f1() {
+        var x = 2;
+    }
+```
+
+嵌套函数，内部可以访问外部变量，外部不可以访问
+
+```js
+function f2() {
+        var x = 1;
+        function f3() {
+            /*内部可以访问外部变量，外部不可以访问*/
+            var y = x;
+            console.log(y);
+        }
+    }
+```
+
+**自动提升变量声明**，但是不会提升变量赋值
+
+```js
+function f3() {
+        var x = y;
+        console.log(x);         //显示的是undefined，意思是有y这个变量，但是没有赋值，即var y;
+        /*y定义在x的后面，  为什么不报错呢，
+        原因是var y = 10 可以分成两步 
+        1。 var y;                 
+        2. y = 10;同理，
+      var x = y ，也是两步  ，JS自动提升变量声明， 把var y提升到了x = y 的前面，所以有了undefined */
+        var y = 10;
+    }
+```
+
+所以尽量把所有变量定义在开头，便于代码维护
+
+```js
+/*代码改进,定义放最开头*/
+    function f4() {
+        var x,y;
+        y = 10;
+        x = y;
+    }
+```
+
+
+
+### 全局变量
+
+Javascript就是一个全局作用域。我们所有的变量都绑在全局上。但是如果我们引入多个JS文件，中间存在相同的变量怎么解决冲突
+
+可以每个JS文件 创建一个全局空间，把这JS的文件全部加入这个全局空间内
+
+例如jQuery。jQuery.
+
+​						用$代替
+
+
+
+### 局部作用域let
+
+```js
+/*局部作用域冲突*/
+    function f5() {
+        for(var i = 0;i<2;i++){
+
+        }
+        console.log(i);     //2 ,发现i可以再其他地方被输出，但是我不想，就可以用let
+    }
+```
+
+使用let解决作用作用域冲突，let只在本作用域下有效
+
+```js
+ /*使用let解决局部作用域冲突,let只在本作用域下有效*/
+    function f6() {
+        for(let i=0;i<2;i++){
+
+        }
+        console.log(i);     //ReferenceError: i is not defined
+    }
+```
+
+建议用let去定义局部作用域的变量
+
+
+
+## 方法
+
+定义方法，把函数放在对象中
+
+```JS
+/*  对象有两个东西，属性和方法*/
+        var person = {
+            name : "yzy",
+            birth : 1998,
+            age : function () {
+                /*获取当前年份*/
+                var now = new Date().getFullYear();
+                return now - this.birth;
+            }
+        };
+        //方法需要带（）
+        console.log(person.age());      // 22
+```
+
+ ==**this**==
+
+怎么理解this呢？
+
+我们可以把方法拉出来
+
+**这里解释一下调用函数带不带括号问题**：
+
+- 函数名是指针，如果不带括号代表执行这个指针，那么就是寻找他，会显示函数的信息
+
+  加括号代表直接执行花括号里的代码
+
+- 而在**方法的属性调用函数**时，这不**能加括号**，因为因为加括号是直接执行方法，而你需要读取this.birth这个属性，所以要指向函数指针
+
+- 调用**对象的方法**是就需要**带括号**了
+
+```js
+var person2 = {
+        name : "yzy",
+        birth : 1998,
+    /*这里不能加括号，因为加括号是直接执行方法，而你需要读取this.birth这个属性，所以要指向函数指针*/
+        age : getAge()
+    };
+
+    //调用对象的方法需要带括号，否则指向的是函数名指针
+    console.log(person2.age());      //22
+    console.log(getAge());           //NaN
+	
+
+        /*这两个差别是什么，person.age()这个方法是person在调用，所以this读取的就是person里的birth
+        *                   而getAge()是全局在调用，而全局没有这个属性，this读取不到，所以为NaN
+        *       由此可得，this 被谁调用，就读取谁的属性*/
+```
+
+由此可得，**this 被谁调用，就读取谁的属性**
+
+如果我就想在**全局里**拿到该属性可不可以？可以！
+
+==**apply**==
+
+使用apply指定想要获取哪个对象的属性
+
+```js
+/*使用apply指向你想要获取属性的对象，第二个是参数，可以填空*/
+        console.log(getAge.apply(person2, []));                 //22  
+        // 在使用apply时函数也不能加括号，否则会立刻执行
+```
+
+
+
+# 内部对象
+
+标准对象
+
+```js
+typeof 1
+"number"
+typeof ""
+"string"
+typeof true
+"boolean"
+typeof null
+"object"
+typeof []
+"object"
+typeof {}
+"object"
+typeof undefined
+"undefined"
+typeof getAge
+"function"
+```
+
+
+
+## Date
+
+```js
+var time = new Date();
+        console.log(time);          //Date Sat Apr 25 2020 22:50:49 GMT+0800 (中国标准时间)
+```
+
+![1587826434708](JavaScript.assets/1587826434708.png)
+
+![1587826557827](JavaScript.assets/1587826557827.png)
+
+
+
+## JSON
+
+- **一种轻量级的数据交换格式**
+
+- **简洁和清晰的层次结构**
+- 易于阅读和编写，也易于机器解析，有效提升网络传输效率
+
+
+
+在javascript中，一切都是对象，任何js类型都支持JSON
+
+格式
+
+- 对象都用{}
+- 数组都用[]
+- 所有的键值对都用key:value
+
+==JSON与JavaScript的互相转化==
+
+```js
+        var person = {
+            name:"yzy",
+            age:21,
+            sex:"man"
+        };
+        console.log(person);   //Object { name: "yzy", age: 21, sex: "man" }
+
+        /* 将对象转化为JSON*/
+        let JSONPerson = JSON.stringify(person);
+        console.log(JSONPerson);            //{"name":"yzy","age":21,"sex":"man"}
+
+        /*将JSON转化为JavaScript对应类型*/
+        let parse = JSON.parse(JSONPerson);
+        // 里面和外面不能都是双引号或单引号
+        let parse2 = JSON.parse('{"name":"yzy","age":21,"sex":"man"}');
+        console.log(parse);             //  Object { name: "yzy", age: 21, sex: "man" }
+        console.log(parse2);            //  Object { name: "yzy", age: 21, sex: "man" },两者效果一样
+```
+
+JSON和对象的不同点
+
+- {"name":"yzy","age":21,"sex":"man"}  ： JSON 的 key**带引号**
+- Object { name: "yzy", age: 21, sex: "man" }   ： 对象的key**不带引号**
+
+
+
+# 面向对象编程
+
+**Java中**
+
+类：模板
+
+对象：具体表现
+
+JavaScript中
+
+原型：
+
+
+
+
+
+```js
+/*类*/
+        var person = {
+            name : "yzy",
+            run : function () {
+                console.log(this.name + "run");
+            }
+        };
+
+        /*对象*/
+        var YY = {
+            name : "YY",
+            //如果我想实现person类的run方法，该怎么办呢
+            };
+
+
+        // YY.run();       //SyntaxError: expected expression, got '}'
+
+        /*使对象的原型是person
+        *   把YY的原型指向了person*/
+        YY.__proto__ = person;
+
+        YY.run();       //YYrun   继承了之后就可以调用父类方法
+    //    在YY中的prototype里发现了person的属性和方法，即想在YY的prototype是person
+```
+
+在YY中的prototype里发现了person的属性和方法，即想在YY的prototype是person
+
+![1587828962424](JavaScript.assets/1587828962424.png)
