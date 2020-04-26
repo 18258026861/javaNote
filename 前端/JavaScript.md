@@ -1,3 +1,5 @@
+
+
 # JavaScript
 
 ## 什么是JavaScript
@@ -286,19 +288,19 @@ Java必须是同一类型
         console.log(array);   //Array [ 1, 2 ]
 ```
 
-**indexof**,通过元素找到他的下标，有多个该元素时返回第一个
+> indexof,通过元素找到他的下标，有多个该元素时返回第一个
 
 ```js
 array.indexOf(null);   //4
 ```
 
-**slice()**，截取一部分返回型数组，类似String的substring
+> slice()，截取一部分返回型数组，类似String的substring
 
 ```js
 array.slice(2,4);  //Array [ 45, "name" ]
 ```
 
-**push,pop**：尾部操作
+> push,pop：尾部操作
 
 ```js
 		/*push 和 pop尾部压入和弹出*/
@@ -306,7 +308,7 @@ array.slice(2,4);  //Array [ 45, "name" ]
         array.pop()         //[ 1, 2, 45, "name", null, 1, 1 ]
 ```
 
-**unshift，shift**：头部操作
+> unshift，shift：头部操作
 
 ```js
         /*unshift和shift 头部压入和弹出*/
@@ -314,26 +316,26 @@ array.unshift("a",4); //Array(11) [ "a", 4, 1, 2, 45, "name", null, 1, 1, 1, …
 array.shift();           //Array(11) [  4, 1, 2, 45, "name", null, 1, 1, 1, … ]
 ```
 
-**sort**：排序
+> sort：排序
 
 ```js
 Array.sort();           //Array(10) [ 1, 1, 1, 1, 2, 2, 4, 45, "name", null ]
 ```
 
-**reverse** ： 翻转
+> reverse ： 翻转
 
 ```js
  array.reverse();        //Array(10) [ null, "name", 45, 4, 2, 2, 1, 1, 1, 1 ]
 ```
 
-**concat** 添加返回新数组，原数组保持不变
+>  concat 添加返回新数组，原数组保持不变
 
 ```js
 array.concat(1,2); // Array(12) [ null, "name", 45, 4, 2, 2, 1, 1, 1, 1, 1 , 2 ]
 console.log(array);;      //Array(10) [ null, "name", 45, 4, 2, 2, 1, 1, 1, 1 ]
 ```
 
-join ： 打印拼接数组
+> join ： 打印拼接数组
 
 ```js
 array.join("--");       //"--name--45--4--2--2--1--1--1--1"
@@ -371,7 +373,7 @@ person.age;      //21
 
 不存在的对象属性**不会报错**，显示undifined
 
-**动态增删属性**
+>  动态增删属性
 
 ```js
  person.hh = "hh";
@@ -380,7 +382,7 @@ person.age;      //21
         person          //Object { name: "yzy", age: 22, sex: "man" }
 ```
 
-**判断是否有该属性**
+>  判断是否有该属性
 
 ```js
 /*判断是否有该属性,属性名是字符串，要加上引号（单双都行）*/
@@ -389,7 +391,7 @@ person.age;      //21
         'toString' in person;       // true
 ```
 
-判断对象本身是否有该属性
+> 判断对象本身是否有该属性
 
 ```js
 person.hasOwnProperty('age');       //true
@@ -401,6 +403,8 @@ person.hasOwnProperty('age');       //true
 ## Map 和 Set
 
 ES6的新特性
+
+> Map
 
 ```js
 /*本来多个书籍应该这么写*/
@@ -417,7 +421,7 @@ ES6的新特性
         map.delete("ss");       // Map(3) { yzy → 10, yy → 12, hc → 5 }
 ```
 
-**set**:**无序不重复**的集合
+> set**:**无序不重复的集合
 
 ```js
 /*set*/
@@ -605,7 +609,7 @@ f1(7,2);       //x大于5，输入多个参数会判断第一个
 
 ![1587743522109](JavaScript.assets/1587743522109.png)
 
-arguements：参数数组
+> arguements：参数数组
 
 ```js
 var f3 = function (x) {
@@ -760,7 +764,7 @@ Javascript就是一个全局作用域。我们所有的变量都绑在全局上�
         console.log(person.age());      // 22
 ```
 
- ==**this**==
+>  this
 
 怎么理解this呢？
 
@@ -798,7 +802,7 @@ var person2 = {
 
 如果我就想在**全局里**拿到该属性可不可以？可以！
 
-==**apply**==
+> apply
 
 使用apply指定想要获取哪个对象的属性
 
@@ -865,7 +869,7 @@ var time = new Date();
 - 数组都用[]
 - 所有的键值对都用key:value
 
-==JSON与JavaScript的互相转化==
+> JSON与JavaScript的互相转化
 
 ```js
         var person = {
@@ -896,19 +900,17 @@ JSON和对象的不同点
 
 # 面向对象编程
 
-**Java中**
+>  Java中
 
 类：模板
 
 对象：具体表现
 
-JavaScript中
+>  JavaScript中
 
-原型：
+原型：相当于类
 
-
-
-
+对象：让其原型指向一个对象，就可以使用那个对象的方法
 
 ```js
 /*类*/
@@ -939,3 +941,477 @@ JavaScript中
 在YY中的prototype里发现了person的属性和方法，即想在YY的prototype是person
 
 ![1587828962424](JavaScript.assets/1587828962424.png)
+
+## class
+
+ES6 引入
+
+```js
+/*ES6引入的class关键字
+        *   定义一个类，拥有属性和方法
+        *       - 属性通过构造器注入
+        *       */
+        class student{
+            constructor(name) {
+                this.name = name;
+            }
+            run(){
+                return this.name+"run";
+        }
+        }
+        /*要是用就要创建类的实例--对象*/
+        var YY = new student("YY");
+        //和java一样，可以构造器注入，也可以属性赋值
+        YY.name = "YZY";
+        console.log(YY.run());                  //YZYrun
+```
+
+> 继承
+
+```js
+/*继承*/
+
+        class primaryStudent extends student{
+            constructor(name,schoolName) {
+                super(name);
+                this.schoolName = schoolName;
+            }
+            run() {
+                return super.run()+this.schoolName;
+            }
+
+        }
+
+        var p = new primaryStudent("YY","秋瑾");
+        console.log(p.run());           //YYrun秋瑾
+```
+
+ **继承的本质还是原型**，只是参照java更加规范
+
+![img](JavaScript.assets/}EQ926B2F4BXQWAD15V534.png) 
+
+>  原型链
+
+![1587878043347](JavaScript.assets/1587878043347.png)
+
+
+
+# 操作BOM对象（重点）
+
+> 浏览器
+
+JavaScript的诞生就是为了能够在浏览器中运行
+
+BOM：浏览器对象模型
+
+浏览器内核
+
+- IE
+- Chrome
+- Safari
+- FirFox
+- Opera
+
+
+
+## window 
+
+代表浏览器窗口
+
+```js
+/*window的方法*/
+        window.alert("yy");
+        /*浏览器内部宽高*/
+        window.innerHeight; // 233
+        window.innerWidth;  //1920
+        /*浏览器外部宽高*/
+        window.outerHeight; //1040
+        window.outerWidth;  //1936
+```
+
+> Navigator
+
+封装了浏览器的信息
+
+```js
+ /*     Navigator*/
+    window.navigator.appName;   //"Netscape"
+    window.navigator.appVersion;    //"5.0 (Windows)"
+    navigator.userAgent;    //"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:75.0) Gecko/20100101 Firefox/75.0"
+    navigator.platform;     //"Win32"
+```
+
+一般不会去使用，因为它可以被修改
+
+> screen
+
+屏幕尺寸
+
+```js
+/*screen，屏幕尺寸*/
+         screen.height; //1080
+         screen.width;  //1920
+```
+
+### location
+
+代表当前页面的URL信息
+
+```js
+/*location 当前页面的URL信息*/
+        Location        /*Location http://localhost:63342/%E5%89%8D%E7%AB%AF/JavaScript/BOM/window.html?_ijt=bqdk9jjueffs1i8tj5n8ctm11d
+                            设置新的地址
+                            assign: function assign()
+                            hash: ""
+                            服务器名和端口
+                            host: "localhost:63342"
+                            服务器名称
+                            hostname: "localhost"
+                            完整的URL
+                            href: "http://localhost:63342/%E5%89%8D%E7%AB%AF/JavaScript/BOM/window.html?_ijt=bqdk9jjueffs1i8tj5n8ctm11d"
+                            origin: "http://localhost:63342"
+                            URL中的目录和文件
+                            pathname: "/%E5%89%8D%E7%AB%AF/JavaScript/BOM/window.html"
+                            端口
+                            port: "63342"
+                            协议
+                            protocol: "http:"
+                            重新加载的方法
+                            reload: function reload()
+                            用其他地址替代该地址
+                            replace: replace()*/
+```
+
+
+
+## document
+
+代表当前页面
+
+```js
+ /*document 代表当前页面*/
+        document.title;        //"Title"
+        document.title = "YZY";        //"YZY"
+
+        /*获取HTML DOM文档树的树节点*/
+        document.getElementById("father");
+        document.getElementById("java");
+```
+
+> 获取cookie
+
+```js
+//    获取网页cookie
+        document.cookie;
+```
+
+**挟持cookie**
+
+一些恶意弹窗会获取你的cookie到他的服务器
+
+也有比如说登录了淘宝，那么登录天猫也会自动登录，天猫获取了你的cookie
+
+服务器端可以设置cookie：httpOnly
+
+
+
+> history
+
+浏览器的历史，前进后退页面
+
+```js
+/*hsitory*/
+        history.back();     //后退
+        history.forward();      //前进
+```
+
+**不建议使用**
+
+
+
+# 操作DOM对象（重点）
+
+> 本质
+
+整个浏览器页面就是一个DOM 数结构，JavaScript主要对数节点做以下操作
+
+- 遍历DOM节点得到DOM节点
+- 更新DOM节点
+- 删除DOM节点
+- 添加DOM节点
+
+## 得到节点
+
+要操作DOM节点需要**先得到DOM节点**
+
+```html
+<p id="p">p1节点</p>
+<h1 id="h1">h1节点</h1>
+<span id="span">span节点</span>
+
+<div id="div">
+    <h2 class="div">h2</h2>
+    <h3 class="div">h2</h3>
+</div>
+```
+
+> 通过节点id获得节点
+
+```js
+/*      获取父节点*/
+    let div = document.getElementById("div");
+    /*父节点的子节点的数量*/
+    div.childElementCount;          //2
+
+    /*父节点的第一个，最后一个节点*/
+    div.firstChild;
+    div.lastChild;
+    //获取父节点下子节点
+    div.children;                 /*0: <h2 class="div">​
+                                    1: <h3 class="div">
+                                    length: 2*/
+    //子节点的上下一个节点
+    span.lastChild;
+    span.nextElementSibling;
+```
+
+> 通过标签类型获得collection
+
+再通过下标获取指定节点
+
+```js
+/*通过标签获得collection*/
+    let ps = document.getElementsByTagName("p");
+    //获取第一个节点
+    let p1 = ps[0];
+    let p2 = ps[1];
+```
+
+这是原生代码，我们可以使用jQuery
+
+
+
+## 更新M节点
+
+```html
+<body>
+<div id="id1"></div>
+</body>
+```
+
+```js
+let id1 = document.getElementById("id1");
+    //修改节点的文本值
+    id1.innerText="YY";
+    //在节点内加入HTML内容
+    id1.innerHTML="<span> 修改节点的HTML结构 </span>"
+```
+
+可以再结构中看到节点内增加了HTML结构
+
+![1587909356502](JavaScript.assets/1587909356502.png)
+
+
+
+操作CSS
+
+```js
+//相当于CSS的写法,但是不支持-，所以用驼峰命名法
+    id1.style.color = "blue";
+    id1.style.fontSize = "larger";
+    id1.style.padding = "10px"
+```
+
+
+
+## 删除节点
+
+```
+<body>
+<div id="father">
+    <p id="p">p1节点</p>
+    <h1 id="h1">h1节点</h1>
+    <span id="span">span节点</span>
+</div>
+</body>
+```
+
+找到该节点，**自己删除自己**
+
+```js
+/*自己删除自己*/
+    let h1 = document.getElementById("h1");
+    h1.remove();
+```
+
+**找到父节点删除子节点**
+
+```js
+ /*第一种写法*/
+    let father = document.getElementById("father");
+    let p = document.getElementById("p");
+    //这个是通过找到子节点，所以需要先获取子节点
+    // father.removeChild("p");               //这个写法错了，先要获取子节点
+    father.removeChild(p);
+
+    
+    /*第二种写法*/
+    let p1 = document.getElementById("p");
+    // 通过该节点找到其父节点
+    let father1 = p1.parentElement;
+    father1.removeChild(p1);
+```
+
+操作节点是一个**动态的过程**，所以你执行语句后，**节点就会发生变化**，例如通过父节点的子节点下边删除节点。
+
+```js
+/*通过父节点的第几个子节点来删除节点*/
+    father.removeChild(father.children[0]);
+    father.removeChild(father.children[1]);             
+    father.removeChild(father.children[2]);         //执行这句就会报错，因为动态更新，执行完第一句，就只剩下两个节点，就越界了
+//    所以如果想按顺序删除，可以都使用删除第一个节点，不要像上面这么写
+    father.removeChild(father.children[0]);
+    father.removeChild(father.children[0]);
+    father.removeChild(father.children[0]);
+```
+
+
+
+## 添加节点
+
+找到了一个节点，**如果这个节点是空的**，那么可以用更新节点中的**inner方法**，但是如果有内容了，私有这个方法会被**覆盖**。
+
+```html
+<dl id="father">
+    <dt id="java">
+        Java
+    </dt>
+    <dd id="se">
+        JavaSe
+    </dd>
+    <dd id="ee">
+        JavaEE
+    </dd>
+</dl>
+
+<dd id="sp">Spring</dd>
+```
+
+> append:父节点尾部添加新子节点
+
+```js
+let ee = document.getElementById("ee");
+    let father = document.getElementById("father");
+    let sp = document.getElementById("sp");
+    //追加一个节点，放到最后
+    father.append(sp);
+
+    /*创造一个新节点*/
+    //创造一个p普通节点，dd标签
+    let web = document.createElement("dd");
+    //设置标签的属性值，一些常用的属性可以直接赋值，比如web.id = "web";
+    web.setAttribute("id","web");
+    web.innerText = "JavaWeb";
+    father.append(web);
+
+//    创造一个script标签
+    let script = document.createElement("script");
+    script.setAttribute("type","text/html");
+    father.append(script);
+```
+
+![1587913913794](JavaScript.assets/1587913913794.png)
+
+> insert
+
+```js
+/*insert插入任意位置*/
+    //  父节点的方法insertBefore(插入的新节点,目标节点)：在目标节点之前插入新节点
+    father.insertBefore(sp,ee);
+```
+
+
+
+# 操作表单（验证）
+
+>  type
+
+- text
+- radio
+- checkbox
+- hidden
+- password
+- ...
+
+
+
+```html
+<form action="#">
+    <p>
+    用户名:<input type="text" id="username" name="username">
+    </p>
+    <p>
+        密码：<input type="password" id="password" name="password">
+    </p>
+    性别：
+    <input type="radio" name="sex" value="man" >男
+
+    <input type="radio" name="sex" value="women" checked>女
+
+    <br>
+    <button type="button" onclick="ss()">提交</button>
+</form>
+```
+
+
+
+## 获取表单的值
+
+```js
+let username = document.getElementById("username");
+    //获取输入的值，可以赋值
+    username.value;
+```
+
+对于**单选框多选框**，不能获取到用户输入的值，只能通过**判断checked是否选中**来操作
+
+```js
+//    对于单选框多选框，不能获取到用户输入的值，只能通过判断checked是否选中来操作
+    let input = document.getElementsByTagName("input");
+    let boy = input[1];
+    //判断该选线是否被选中
+    boy.checked;
+```
+
+
+
+## 提交表单
+
+```js
+ /*提交表单*/
+    function ss() {
+        //当点击时，会输出账号和密码，但是这个值是公开的，怎么让他加密
+        console.log(username.value);
+        console.log(password.value);
+    }
+```
+
+但是在network中会显示明文密码，怎么让他加密呢？
+
+![1587917339853](JavaScript.assets/1587917339853.png)
+
+> MD5
+
+导入MD5加密CDN
+
+```js
+<script src="https://cdn.bootcss.com/blueimp-md5/2.13.0/js/md5.js"></script>
+```
+
+```js
+//在输出之前通过md5加密
+        password.value = md5(password.value);
+        console.log(password.value);
+```
+
+![1587917451761](JavaScript.assets/1587917451761.png)
