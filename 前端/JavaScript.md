@@ -1400,7 +1400,7 @@ let username = document.getElementById("username");
 
 ![1587917339853](JavaScript.assets/1587917339853.png)
 
-> MD5
+> MD5加密
 
 导入MD5加密CDN
 
@@ -1415,3 +1415,166 @@ let username = document.getElementById("username");
 ```
 
 ![1587917451761](JavaScript.assets/1587917451761.png)
+
+
+
+# jQuery
+
+是JavaScript的一个库
+
+ http://jquery.cuishifeng.cn/index.html jQuery参考网站
+
+>  导入jQuery
+
+```js
+    <script src="jquery-3.4.1.js"></script>
+```
+
+> jQuery公式: $(selector).action
+
+```js
+<button type="button" id="button">点我</button>
+        <script>
+            /*使用document写法*/
+            let button = document.getElementById("button");
+            button.click(function () {
+               
+            })
+        </script>
+
+<!--公式 $(selector).action
+            selector即CSS的选择器：#id，.class，-->
+        <script>
+            /*简化了上述操作*/
+            $('#button').click(function () {
+                    alert("点击了按钮")
+            })
+        </script>
+```
+
+
+
+## 选择器
+
+> JS和jQuery的比较
+
+```js
+ /*JS原生选择器,比较繁琐*/
+//    标签
+        document.getElementsByTagName("p");
+//        id
+        document.getElementById("pp");
+//        class
+        document.getElementsByClassName("button");
+
+        /*jQuery选择器，结合CSS*/
+//    标签
+        $('p');
+//        id
+        $('#pp');
+//      class
+        $('.button')
+```
+
+
+
+## 事件
+
+
+
+## 页面载入
+
+当DOM载入就绪可以查询及操纵时绑定一个要执行的函数。
+
+这是事件模块中**最重要**的一个函数，因为它可以极大地提高web应用程序的响应速度。
+
+```js
+/*当页面元素加载完，响应事件*/
+   /* $(document).ready(function () {
+
+    })*/
+
+
+    //简化
+    $(function () {
+    })
+```
+
+
+
+> 鼠标事件
+
+```html
+<style>
+        #mouseArea{
+            width: 500px;
+            height: 500px;
+            border: 1px solid red;
+        }
+    </style>
+显示鼠标信息：<span id="moveInfo"></span>
+<div id="mouseArea"></div>
+```
+
+```js
+/*当页面元素加载完，响应事件*/
+   /* $(document).ready(function () {
+
+    })*/
+    //简化
+    $(function () {
+        /*鼠标的事件*/
+        $('#mouseArea').mousemove(function (e) {
+            $('#moveInfo').text('x:'+e.pageX +'  y:'+e.pageY);
+        })
+    })
+```
+
+![1587989955498](JavaScript.assets/1587989955498.png)
+
+
+
+## 操作DOM
+
+```html
+<dl id="father">
+    <dt id="java">
+        Java
+    </dt>
+    <dd id="se">
+        JavaSe
+    </dd>
+    <dd id="ee">
+        JavaEE
+    </dd>
+</dl>
+```
+
+> 获取和设置节点的内容
+
+```js
+//father节点下的java子节点,text（）没有参数得到它的值，写参数赋值
+    $("#father dd[id=java]").text();
+    $("#father dd[id=se]").html('<strong>strong</strong>');
+```
+
+> 设置CSS
+
+```js
+/*设置CSS ，属性为键值对*/
+    //设置单个可以直接，隔开
+    $('#father').css('color','red')
+    //设置多个可以用大括号（里面为键值对）隔开
+    $('#father').css({'color':'red'})
+```
+
+> 元素的隐藏和显示
+
+```js
+ /*元素的隐藏和显示  ,就是jQuery对CSS的display进行封装*/
+    $('#ee').hide();
+    $('#ee').show();
+    //切换隐藏和显示
+    $('#ee').toggle();
+```
+
