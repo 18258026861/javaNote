@@ -300,6 +300,18 @@ array.indexOf(null);   //4
 array.slice(2,4);  //Array [ 45, "name" ]
 ```
 
+> splice()，万能方法，指定索引位置删除和添加元素
+
+```js
+/* 第一个元素是下标七点，第二个元素是从下表开始删除元素个数，后面的是添加的元素*/
+//从第三位开始删除3个元素
+array.splice(2,3);
+//从第三位开始不删除，添加两个元素
+array.splice(2,'YY','YZY');
+//从第三位开始删除3个元素，添加两个元素
+array.splice(2,3,'YY','YZY');
+```
+
 > push,pop：尾部操作
 
 ```js
