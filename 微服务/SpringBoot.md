@@ -135,7 +135,7 @@ public class Contreoller {
 
 # 
 
-# 自动装配
+# 1.自动装配
 
 ## 依赖
 
@@ -485,7 +485,7 @@ public ConfigurableApplicationContext run(String... args) {
 
 
 
-# 配置文件
+# 2.配置文件
 
 springBoot的配置文件有两种
 
@@ -713,3 +713,508 @@ debug: true
 positive match：显示生效的配置类
 
 nagative match：显示未生效的配置类
+
+
+
+# 3.Web开发
+
+需要解决的问题
+
+- 导入静态资源
+- 首页
+- jsp，模板引擎thymeleaf
+- 装配扩展springMVC
+- 业务
+- 拦截器
+- 国际化
+
+
+
+## 导入静态资源
+
+>  WebMVCConfiguration.class
+
+找到addResourceHandler方法
+
+```java
+@Override
+		public void addResourceHandlers(ResourceHandlerRegistry registry) {
+            //判断静态资源是否已自动配置
+			if (!this.resourceProperties.isAddMappings()) {
+				logger.debug("Default resource handling disabled");
+				return;
+			}
+			Duration cachePeriod = this.resourceProperties.getCache().getPeriod();
+			CacheControl cacheControl = this.resourceProperties.getCache().getCachecontrol().toHttpCacheControl();
+            // 判断资源是否配置到一下路径，如果没有，设置到该路径
+			if (!registry.hasMappingForPattern("/webjars/**")) {
+		customizeResourceHandlerRegistration(registry.addResourceHandler("/webjars/**")
+						.addResourceLocations("classpath:/META-INF/resources/webjars/")
+						.setCachePeriod(getSeconds(cachePeriod)).setCacheControl(cacheControl));
+			}
+            //  获取静态资源的路径 
+			String staticPathPattern = this.mvcProperties.getStaticPathPattern();
+			if (!registry.hasMappingForPattern(staticPathPattern)) {
+				customizeResourceHandlerRegistration(registry.addResourceHandler(staticPathPattern)
+						.addResourceLocations(getResourceLocations(this.resourceProperties.getStaticLocations()))
+						.setCachePeriod(getSeconds(cachePeriod)).setCacheControl(cacheControl));
+			}
+		}
+```
+
+1. 访问webjar目录，通过maven引入的jar包都是这种方式
+
+```java
+/webjars/就是下面的缩写
+classpath:/META-INF/resources/webjars/
+```
+
+![1588406376314](SpringBoot.assets/1588406376314.png)
+
+2. 获取项目**静态资源路径** 
+
+   **this.mvcProperties.getStaticPathPattern();**
+
+```java
+
+String staticPathPattern = this.mvcProperties.getStaticPathPattern();
+//这句话在点进getStaticPathPattern();方法后
+// /** 当前目录下的所有文件都识别，即资源目录
+private String staticPathPattern = "/**";
+// 被识别的目录，第一个就是上面那个jar报的
+private static final String[] CLASSPATH_RESOURCE_LOCATIONS = { 
+  "classpath:/META-INF/resources/"  , "classpath:/resources/", 
+    "classpath:/static/",   "classpath:/public/" };
+```
+
+剩下三个：对应资源目录下的三个文件夹（可手动创建）
+
+![1588407745214](SpringBoot.assets/1588407745214.png)
+
+### 总结
+
+通过源码，我们知道4种方式处理静态资源
+
+- webjar 第三发jar包			访问路径：localhost:8080/webjar/文件名
+- public,static,resources  三个目录下的文件    访问路径：lovalhost:8080/文件名
+
+优先级：resource > static(默认) > public 
+
+
+
+
+
+
+
+
+
+## 模板引擎
+
+> 什么是模板引擎
+
+ 是为了使用户界面与业务数据（内容）分离而产生的，它可以生成特定格式的文档，用于网站的模板引擎就会生成一个标准的[HTML](https://baike.baidu.com/item/HTML/97049)文档 ，比如JSP就是一个模板引擎。
+
+**有时候经常需要根据后端返回的json数据，然后来生成html，再渲染页面。**，模板引擎就是写一个页面模板，将一些动态的值也能通过表达式填充到指定位置
+
+
+
+> 导入依赖
+
+```xml
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+```
+
+
+
+> 源码
+
+ThymeleafProperties.class
+
+相当于**视图解析器**，为资源加上前缀后缀
+
+```java
+@ConfigurationProperties(prefix = "spring.thymeleaf")
+public class ThymeleafProperties {
+
+	private static final Charset DEFAULT_ENCODING = StandardCharsets.UTF_8;
+
+    //指定的路径为templates，前缀即为路径
+	public static final String DEFAULT_PREFIX = "classpath:/templates/";
+
+    //文件后缀为html
+	public static final String DEFAULT_SUFFIX = ".html";
+```
+
+### 资源位置 tempates
+
+通过controller跳转资源，需要把资源放到**templates目录下**
+
+而且**templates的资源只允许controller访问**
+
+![1588435240222](SpringBoot.assets/1588435240222.png)
+
+
+
+> controller.class：
+
+**视图名**：classpath:/templates/文件名.html
+
+```java
+//   templates目录下的所有资源，只有controller才能访问
+//   因为没有视图解析器，所以需要模板引擎的支持 thymeleaf
+@Controller
+public class IndexController {
+
+    
+//    设置首页
+    @RequestMapping("/index")
+    public String index(){
+        return "index";
+    }
+    
+   @RequestMapping("/test")
+    public String test(Model model){
+        model.addAttribute("message","YY");
+        List<Object> lists = new ArrayList();
+        lists.add("YZY");
+        lists.add("YY");
+//        模板引擎将视图名拼接成classpath:/templates/test.html
+        return "test";
+    }
+}
+```
+
+> test.html
+
+```
+<h1>test</h1>
+<!--直接输出可能不会显示-->
+${message}
+```
+
+![1588435754010](SpringBoot.assets/1588435754010.png)
+
+改良版
+
+```
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<!--使用thymeleaf语法，类似vue
+            th:属性-->
+<p th:text="${message}"></p>
+```
+
+![1588436048058](SpringBoot.assets/1588436048058.png)
+
+### 语法
+
+![1588476515969](SpringBoot.assets/1588476515969.png)
+
+```html
+<!--遍历集合-->
+<h2 th:each="list:${lists}" th:text="${list}"></h2>
+<!--也可以写在内容中-->
+<h2 th:each="list:${lists}" >[[ ${list} ]]</h2>
+```
+
+
+
+## 首页
+
+>  源码webMVCConfiguration
+
+WelcomePageHandlerMapping：欢迎界面（首页）映射
+
+```java
+public WelcomePageHandlerMapping welcomePageHandlerMapping(ApplicationContext applicationContext,
+				FormattingConversionService mvcConversionService, ResourceUrlProvider mvcResourceUrlProvider) {
+			WelcomePageHandlerMapping welcomePageHandlerMapping = new WelcomePageHandlerMapping(
+					new TemplateAvailabilityProviders(applicationContext), applicationContext, getWelcomePage(),
+					this.mvcProperties.getStaticPathPattern());
+			welcomePageHandlerMapping.setInterceptors(getInterceptors(mvcConversionService, mvcResourceUrlProvider));
+			return welcomePageHandlerMapping;
+		}
+
+
+		private Optional<Resource> getWelcomePage() {
+            // 获取资源目录
+			String[] locations = getResourceLocations(this.resourceProperties.getStaticLocations());
+			return Arrays.stream(locations).map(this::getIndexHtml).filter(this::isReadable).findFirst();
+		}
+
+//     获取静态资源目录下的index.html
+		private Resource getIndexHtml(String location) {
+			return this.resourceLoader.getResource(location + "index.html");
+		}
+```
+
+可以吧首页放在资源目录的三个**静态资源文件夹**内
+
+![1588416985284](SpringBoot.assets/1588416985284.png)
+
+**映射成功**
+
+![1588418234051](SpringBoot.assets/1588418234051.png)
+
+## 扩展MVC
+
+扩展MVC功能可以传建一个MVC配置类，可以**接管**自动配置类里的**某些功能**，不可全面接管@EnableWebMVC
+
+
+
+> 源码
+
+```java
+public View resolveViewName(String viewName, Locale locale) throws Exception {
+		RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
+		Assert.state(attrs instanceof ServletRequestAttributes, "No current ServletRequestAttributes");
+		List<MediaType> requestedMediaTypes = getMediaTypes(((ServletRequestAttributes) attrs).getRequest());
+		if (requestedMediaTypes != null) {
+            //   获取springboot中的所有解析器
+			List<View> candidateViews = getCandidateViews(viewName, locale, requestedMediaTypes);
+            //  选择出最好的视图解析器
+			View bestView = getBestView(candidateViews, requestedMediaTypes, attrs);
+			if (bestView != null) {
+				return bestView;
+			}
+		}
+```
+
+
+
+> 自己写一个视图解析器
+
+```java
+//如果加上这个注解，webMVC自动配置类就会失效
+@EnableWebMvc
+public class webMVCConfig implements WebMvcConfigurer {
+
+//    会把自己写的视图解析器也装配到环境的视图解析器里
+    @Bean
+    public ViewResolver view(){
+        return new MyViewResolver();
+    }
+
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/springboot").setViewName("test");
+    }
+}
+//定义一个自己写的视图解析器
+class MyViewResolver implements ViewResolver{
+//
+    @Override
+    public View resolveViewName(String s, Locale locale) throws Exception {
+        return null;
+    }
+
+
+}
+```
+
+
+
+> 不可以加上@EnableWebMVC
+
+webMVCConfiguration文件里有这样一句话：
+
+```java
+//当不存在这个WebMvcConfigurationSupport.class时条件成立
+@ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
+```
+
+
+
+而加上之后，点入注解
+
+```java
+// 点入配置类
+@Import(DelegatingWebMvcConfiguration.class)
+public @interface EnableWebMvc {
+}
+
+```
+
+点入配置类，发现这个类**继承WebMvcConfigurationSupport**
+
+```java
+public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
+```
+
+这就和前面的自动配置类冲突，导致自动配置类配置类失效
+
+
+
+其他的扩展配置类同理！
+
+
+
+## 业务
+
+模拟数据库
+
+> 表
+
+```java
+//部门表
+public class Department {
+
+    private Integer id;
+    private String departmentName;
+```
+
+```java
+//员工表
+public class Employee {
+
+    private Integer id;
+    private String lastName;
+    private String email;
+//    性别 女：0 男：1
+    private Integer gender;
+    private Department department;
+    private Date birth;
+```
+
+> 业务层
+
+```java
+@Repository
+public class DepartmentDao {
+
+//    模拟数据
+    private static Map<Integer, Department> departmentMap = null;
+    static{
+        departmentMap = new HashMap<>();
+        departmentMap.put(1,new Department(101,"开发"));
+        departmentMap.put(2,new Department(102,"运维"));
+        departmentMap.put(3,new Department(103,"测试"));
+    }
+
+//    业务
+//    获取所有部门信息
+    public Collection<Department> findAllDepartment(){
+        return departmentMap.values();
+    }
+
+//    通过id获取部门信息
+    public Department findDepartMentByID(Integer id){
+        return departmentMap.get(id);
+    }
+
+}
+```
+
+```java
+@Repository
+public class EmployeeDap {
+
+    private static Map<Integer , Employee> employeeMap= null;
+//    员工所属的部门
+    @Autowired
+    private DepartmentDao departmentDao;
+
+    static{
+        employeeMap = new HashMap<>();
+        employeeMap.put(1,new Employee(1,"YZY","email1",1,new Department(1,"开发")));
+        employeeMap.put(2,new Employee(2,"YY","email2",0,new Department(2,"运维")));
+        employeeMap.put(3,new Employee(3,"JJ","email3",0,new Department(1,"开发")));
+        employeeMap.put(4,new Employee(4,"HC","email4",1,new Department(3,"测试")));
+    }
+
+//    业务\
+//    主键自增
+    private static Integer initid = 5;
+//    增加一个员工
+    public void addEmployee(Employee employee){
+        employeeMap.put(initid++,employee);
+    }
+//    删除一个员工
+    public void deleteEmployee(Integer id){
+        employeeMap.remove(id);
+    }
+//    修改员工
+    public void updateEmployee(Employee employee){
+        employeeMap.replace(employee.getId(),employee);
+    }
+//    查询所有员工
+    public Collection<Employee> findAllEmloyee(){
+       return employeeMap.values();
+    }
+//    通过id查找员工
+    public Employee findEmloyeeById(Integer id){
+        return employeeMap.get(id);
+    }
+
+}
+```
+
+> controller层
+
+如果直接把主页跳转放在controller层，**页面的样式不会加载**
+
+
+
+
+
+## 国际化
+
+登录界面可以切换中文和英文
+
+![1588513543101](SpringBoot.assets/1588513543101.png)
+
+
+
+想要切换，就需要一个配置类：
+
+> MyLocaleResolver配置类
+
+```java
+@Configuration
+public class MyLocaleResolver implements LocaleResolver {
+
+    @Override
+    public Locale resolveLocale(HttpServletRequest request) {
+//        获得语言切换的参数请求
+        String language = request.getParameter("language");
+//        默认
+        Locale locale = Locale.getDefault();
+//        如果携带了参数，就赋值返回
+        if(!StringUtils.isEmpty(language))
+        {
+//            _分割：语言，国家
+            String[] split = language.split("_");
+            locale = new Locale(split[0],split[1]);
+        }
+        return locale;
+    }
+
+    @Override
+    public void setLocale(HttpServletRequest request, HttpServletResponse response, Locale locale) {
+
+    }
+}
+```
+
+> MyWebMVCConfig
+
+```java
+@Configuration
+public class MyMVCConfig implements WebMvcConfigurer {
+    @Override
+    public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/").setViewName("index");
+        registry.addViewController("/index.html").setViewName("index");
+    }
+
+//    自定义的国际化组件生效
+    @Bean
+    public LocaleResolver localeResolver(){
+        return new MyLocaleResolver();
+    }
+}
+```
+
