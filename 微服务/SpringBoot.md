@@ -920,9 +920,36 @@ ${message}
 <h2 th:each="list:${lists}" >[[ ${list} ]]</h2>
 ```
 
+>  获取静态资源需要@{路径}
+
+```js
+th:href = "@{/css/**}"
+```
+
+> 复用代码:
+
+复用组件放在一个公用文件内，并用th：fragment标记
+
+```html
+<nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0" th:fragment="navBar">
+
+```
+
+调用common文件夹的common文件中的sideBar组件
+
+```html
+th:insert = '@{common/common::sideBar}'
+```
+
+> 判断
+
+```html
+	<td th:text="${employee.getGender()==0?'女':'男'}"></td>
+```
 
 
-## 首页
+
+## 设置首页
 
 >  源码webMVCConfiguration
 
@@ -1015,8 +1042,6 @@ class MyViewResolver implements ViewResolver{
 }
 ```
 
-
-
 > 不可以加上@EnableWebMVC
 
 webMVCConfiguration文件里有这样一句话：
@@ -1026,9 +1051,7 @@ webMVCConfiguration文件里有这样一句话：
 @ConditionalOnMissingBean(WebMvcConfigurationSupport.class)
 ```
 
-
-
-而加上之后，点入注解
+如果加上，点入注解
 
 ```java
 // 点入配置类
@@ -1045,10 +1068,6 @@ public class DelegatingWebMvcConfiguration extends WebMvcConfigurationSupport {
 ```
 
 这就和前面的自动配置类冲突，导致自动配置类配置类失效
-
-
-
-其他的扩展配置类同理！
 
 
 
@@ -1152,7 +1171,7 @@ public class EmployeeDap {
 }
 ```
 
-> controller层
+
 
 如果直接把主页跳转放在controller层，**页面的样式不会加载**
 
@@ -1218,3 +1237,85 @@ public class MyMVCConfig implements WebMvcConfigurer {
 }
 ```
 
+
+
+## 拦截器
+
+> 创建一个拦截器的类
+
+```java
+public class LoginInterceptor implements HandlerInterceptor {
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        String loginname = (String) request.getSession().getAttribute("loginname");
+        if (loginname.length() != 0) {
+            request.setAttribute("message","还未登陆，无法访问");
+            request.getRequestDispatcher("/index.html").forward(request,response);
+            return true;
+        } else {
+            return false;
+        }
+    }
+}
+```
+
+> 在webMVCConfiguration配置拦截器
+
+```java
+//添加自定义的拦截器
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+//                                                          拦截全部请求，除了主页和登录请求,还有静态资源
+        registry.addInterceptor(new LoginInterceptor()).addPathPatterns("/**")
+                .excludePathPatterns("/index.html","/","/login","/css/**","/img/**","/js/**");
+    }
+```
+
+
+
+## 页面
+
+### 提取公共元素
+
+提取到一个公共文件**common/common.html**
+
+```html
+<!--头部导航栏-->
+<nav class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0" th:fragment="navBar">
+    <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="http://getbootstrap.com/docs/4.0/examples/dashboard/#">欢迎用户：[[${session.loginname}]]</a>
+    <input class="form-control form-control-dark w-100" type="text" placeholder="Search" aria-label="Search">
+    <ul class="navbar-nav px-3">
+        <li class="nav-item text-nowrap">
+            <a class="nav-link" href="http://getbootstrap.com/docs/4.0/examples/dashboard/#">注销</a>
+        </li>
+    </ul>
+</nav>
+
+
+<!--侧边导航栏-->
+<nav class="col-md-2 d-none d-md-block bg-light sidebar" th:fragment="sideBar">
+    
+    
+    <!--公共元素中接收参数并判断-->
+    					<a th:class="${active=='list.html'?'nav-link active':'nav-link'}"></a>
+
+```
+
+其他页面**调用**（可带参数）
+
+```html
+<!--	头部导航栏-->
+<div th:replace="~{common/common::navBar}"></div>
+<!--				侧边栏,带参数-->
+			<div th:replace="~{common/common::sideBar(active='main.html')}"></div>
+```
+
+
+
+### 前端流程
+
+- 创建需要的网页
+- 调用公共元素和编写其他元素
+- 将网页放入webMVCConfig内管理
+- 与业务连接
