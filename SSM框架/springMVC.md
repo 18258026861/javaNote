@@ -557,6 +557,33 @@ public class Controllers implements Controller {
     }
 ```
 
+- 视图名：返回结果为视图解析器拼接后的**页面**
+
+  ```java
+   return "User";
+  ```
+
+- **redirect**和**forward**：返回结果为请求路径
+
+  - redirect:不携带请求参数，也可以是视图名
+
+    ```java
+    //  视图名，绝对路径（项目名之后）
+    return "redirect:/index.jsp";
+    //   请求路径，需要在前面加类路径
+    return "redirect:/Login/toUser";
+    ```
+
+  - forward：可以携带请求参数
+
+    ```java
+    //   请求路径，需要在前面加类路径
+    return "forward:/Login/toUser";
+    ```
+
+    
+
+
 
 # 请求参数
 
@@ -1198,38 +1225,8 @@ public class Interceptor implements HandlerInterceptor {
           
 - 当页面跳转路径不加/时，表示是相对路径（不推荐）
            请求该方法的路径：**当前页面路径+return返回的路径**
-
-
-
-# controller 方法的返回值
-
-- 视图名：返回结果为视图解析器拼接后的**页面**
-
-  ```java
-   return "User";
-  ```
-
-- **redirect**和**forward**：返回结果为请求路径
-
-  - redirect:不携带请求参数，也可以是视图名
-
-    ```java
-    //  视图名，绝对路径（项目名之后）
-    return "redirect:/index.jsp";
-    //   请求路径，需要在前面加类路径
-    return "redirect:/Login/toUser";
-    ```
-
-  - forward：可以携带请求参数
-
-    ```java
-    //   请求路径，需要在前面加类路径
-    return "forward:/Login/toUser";
-    ```
-
-    
-
-
+       
+       
 
 # 文件上传下载
 

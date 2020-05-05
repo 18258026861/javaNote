@@ -791,7 +791,7 @@ private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
 
 ![1588407745214](SpringBoot.assets/1588407745214.png)
 
-### 总结
+> 总结
 
 通过源码，我们知道4种方式处理静态资源
 
@@ -848,7 +848,7 @@ public class ThymeleafProperties {
 	public static final String DEFAULT_SUFFIX = ".html";
 ```
 
-### 资源位置 tempates
+> 资源位置 tempates
 
 通过controller跳转资源，需要把资源放到**templates目录下**
 
@@ -858,7 +858,7 @@ public class ThymeleafProperties {
 
 
 
-> controller.class：
+> controller
 
 **视图名**：classpath:/templates/文件名.html
 
@@ -887,7 +887,7 @@ public class IndexController {
 }
 ```
 
-> test.html
+> 获取参数
 
 ```
 <h1>test</h1>
@@ -1237,6 +1237,15 @@ public class MyMVCConfig implements WebMvcConfigurer {
 }
 ```
 
+> application.yaml
+
+```yaml
+#标注国际化文件位置
+spring:
+  messages:
+    basename: i18n.login
+```
+
 
 
 ## 拦截器
@@ -1266,19 +1275,46 @@ public class LoginInterceptor implements HandlerInterceptor {
 //添加自定义的拦截器
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-//                                                          拦截全部请求，除了主页和登录请求,还有静态资源
+//                               拦截全部请求，除了主页和登录请求,还有静态资源
         registry.addInterceptor(new LoginInterceptor()).addPathPatterns("/**")
-                .excludePathPatterns("/index.html","/","/login","/css/**","/img/**","/js/**");
+           .excludePathPatterns("/index.html","/","/login","/css/**","/img/**","/js/**");
     }
 ```
 
 
 
-## 页面
+## 页面功能（仅纯java代码）
 
-### 提取公共元素
+不具备持久性，即重启服务重置数据
 
-提取到一个公共文件**common/common.html**
+### 前端流程
+
+- 创建需要的网页
+
+- 调用公共元素和编写其他元素
+
+- 将网页放入webMVCConfig内管理
+
+  ```java
+  //    管理跳转链接，因为itemplates不允许外部访问
+      @Override
+      public void addViewControllers(ViewControllerRegistry registry) {
+          registry.addViewController("/").setViewName("index");
+          registry.addViewController("/index.html").setViewName("index");
+          registry.addViewController("/main.html").setViewName("dashboard");
+          registry.addViewController("/list.html").setViewName("list");
+          registry.addViewController("/addE.html").setViewName("addE");
+          registry.addViewController("/updateE.html").setViewName("updateE");
+      }
+  ```
+
+- 与业务连接
+
+
+
+### 提取公共元素（侧边栏和导航栏）
+
+1.提取到一个公共文件**common/common.html**
 
 ```html
 <!--头部导航栏-->
@@ -1302,7 +1338,7 @@ public class LoginInterceptor implements HandlerInterceptor {
 
 ```
 
-其他页面**调用**（可带参数）
+2.其他页面**调用**（可带参数），会在common页面判断
 
 ```html
 <!--	头部导航栏-->
@@ -1313,9 +1349,297 @@ public class LoginInterceptor implements HandlerInterceptor {
 
 
 
-### 前端流程
+### 登录
 
-- 创建需要的网页
-- 调用公共元素和编写其他元素
-- 将网页放入webMVCConfig内管理
-- 与业务连接
+1.登录页面填写账户密码，**国际化功能**可以支持中英文
+
+2.调用登录业务，**成功跳转首页**，不成功**返回登录页面**并返回信息
+
+```java
+@RequestMapping("/login")
+    public String login(String username, String password, Model model, HttpSession session) {
+        if (username.length() != 0 && "1".equals(password)) {
+            session.setAttribute("loginname",username);
+            return "redirect:/main.html";
+        }else{
+            model.addAttribute("message","登录失败");
+            return "index";
+        }
+    }
+```
+
+
+
+
+
+
+
+
+
+### 显示所有职员信息
+
+1.**复用侧边栏**跳转**执行显示所有职员信息的业务**并返回**员工信息页面**
+
+```java
+@RequestMapping("/getAllEmployees")
+    public String getAllEmployees(Model model){
+        Collection<Employee> allEmloyees = employeeDao.findAllEmloyee();
+        model.addAttribute("allEmloyees",allEmloyees);
+        return "list";
+    }
+```
+
+
+
+2.员工信息页面，**获取业务参数并遍历显示**
+
+```html
+<tbody>
+	<!--		th:each="遍历出来的个体:${获取的遍历数据}"					-->
+					<tr th:each="employee:${allEmloyees}">
+					<td th:text="${employee.getId()}"></td>
+					<td th:text="${employee.getLastName()}"></td>
+					<td th:text="${employee.getEmail()}"></td>
+					<td th:text="${employee.getGender()==0?'女':'男'}"></td>
+				<td th:text="${employee.getDepartment().getDepartmentName()}"></td>
+				<td th:text="${#dates.format(employee.getBirth(),'yyyy-MM-dd HH:mm:ss')}"></td>
+				<td>
+					<button class="btn btn-sm btn-primary">修改</button>
+					<button class="btn btn-sm btn-danger">删除</button>
+									</td>
+								</tr>
+							</tbody>
+```
+
+
+
+3.提供**通过员工id**进行**修改**和**删除**
+
+
+
+### 添加职员
+
+1.从首页通过**复用的侧边**跳转（**跳转时执行查询部门业务**）到添加职员界面
+
+```java
+@RequestMapping("/toaddE")
+    public String addE(Model model){
+        Collection<Department> allDepartment = departmentDao.findAllDepartment();
+        model.addAttribute("allDepartment",allDepartment);
+        return "addE";
+    }
+```
+
+
+
+2.添加职员界面有一个填写信息的表单（显示填写的信息）
+
+```html
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+            <h2>添加员工信息</h2>
+            <form th:action="@{/addEmployee}">
+                <div class="form-group">
+                    <label>LastName</label>
+                    <input type="text" name="lastName" class="form-control" placeholder="顽疾">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" class="form-control" placeholder="1061603811@qq.com">
+                </div>
+                <div class="form-group">
+                    <label>Gender</label><br>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" value="1">
+                        <label class="form-check-label">男</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="gender" value="0">
+                        <label class="form-check-label">女</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>department</label>
+                    <select name="department.id" class="form-control" >
+                        <option th:each="Department:${allDepartment}" th:text="${Department.getDepartmentName()}" th:value="${Department.getId()}"></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>birth</label>
+                        <input type="text" name="birth" class="form-control" placeholder="1998/12/12">
+                </div>
+                <button type="submit" class="btn btn-primary">添加</button>
+            </form>
+        </main>
+```
+
+
+
+3.表单中的**选择部门**接收跳转参数，遍历参数并赋值部门id给每个下拉框
+
+```html
+ <select name="department.id" class="form-control" >
+                        <option th:each="Department:${allDepartment}" th:text="${Department.getDepartmentName()}" th:value="${Department.getId()}"></option>
+                    </select>
+```
+
+
+
+4.提交之后**调用addEmployee业务**，添加职员信息之后在**跳转显示所有职员信息**
+
+```java
+@RequestMapping("/addEmployee")
+    public String addEmployee(Employee employee){
+//        添加员工信息
+        employeeDao.addEmployee(employee);
+        return "redirect:/getAllEmployees";
+    }
+```
+
+
+
+> 问题
+
+1.birth格式
+
+​		birth在MVC**默认中的格式**是yyyy/MM/dd,可以在application.yaml中设置成-的格式
+
+```yaml
+#时间日期的格式
+spring: 
+  mvc:
+    date-format: yyyy-MM-dd
+```
+
+​      在显示员工中用到过类似的语句，但是是java转换
+
+```html
+<td th:text="${#dates.format(employee.getBirth(),'yyyy-MM-dd HH:mm:ss')}"></td>
+```
+
+2.提交表单时部门提交的参数应该是department.id
+
+​		如果提交的是department就会报错，因为我们赋给下拉框的值是id的值，所以提交的值也应该是id
+
+
+
+
+
+### 修改员工信息
+
+1.修改按钮操作在显示员工新的右侧
+
+```html
+<a class="btn btn-sm btn-primary" th:href="@{/toupdateE(id=${employee.getId()})}">修改</a>
+```
+
+2.点击携带该员工id参数执行修改修改业务
+
+```java
+//  跳转修改页面
+    @RequestMapping("/toupdateE")
+    public String toupdateE(Integer id,Model model){
+        Employee emloyeeById = employeeDao.findEmloyeeById(id);
+        Collection<Department> allDepartment = departmentDao.findAllDepartment();
+        model.addAttribute("emloyeeById",emloyeeById);
+        model.addAttribute("allDepartment",allDepartment);
+        return "updateE";
+    }
+```
+
+3.修改页面默认提供员工的原本信息（id隐藏）
+
+```html
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 pt-3 px-4">
+    <h2>修改员工信息</h2>
+    <form th:action="@{/updateEmployee}">
+        <input type="hidden" name="id"  th:value="${emloyeeById.getId()}">
+        <div class="form-group">
+            <label>LastName</label>
+            <input type="text" name="lastName" class="form-control" th:value="${emloyeeById.getLastName()}">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" class="form-control" th:value="${emloyeeById.getEmail()}">
+        </div>
+        <div class="form-group">
+            <label>Gender</label><br>
+            <div  class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="gender" value="1">
+                <label class="form-check-label">男</label>
+            </div>
+            <div  class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="gender" value="0">
+                <label class="form-check-label">女</label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>department</label>
+            <select name="department.id" class="form-control" >
+                <option th:selected="${Department.getId()==emloyeeById.getDepartment().getId()}" th:each="Department:${allDepartment}" th:text="${Department.getDepartmentName()}" th:value="${Department.getId()}"></option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>birth</label>
+            <input type="text" name="birth" class="form-control" th:placeholder="${emloyeeById.getBirth()}">
+        </div>
+        <button type="submit" class="btn btn-primary">修改</button>
+    </form>
+</main>
+```
+
+4.修改提交返回员工页面
+
+```java
+@RequestMapping("/updateEmployee")
+    public String updateEmployee(Employee employee){
+        employeeDao.updateEmployee(employee);
+        return "redirect:/getAllEmployees";
+    }
+```
+
+
+
+> 遇到的问题
+
+1.修改完成返回员工界面时，跳转出现Whitelabel Error Page
+
+​		return 返回的页面需要加上重定向  redirect：/
+
+
+
+2.修改之后department栏显示空
+
+​		
+
+3.button标签无法跳转
+
+​		使用a标签，button无法使用href动作
+
+
+
+### 删除员工
+
+1.修改按钮操作在显示员工新的右侧
+
+```html
+<a class="btn btn-sm btn-danger"  th:href="@{/todeleteE(id=${employee.getId()})}">删除</a>
+```
+
+2.跳转调用删除业务并返回员工页面
+
+```java
+//    删除
+    @RequestMapping("/todeleteE")
+    public String delete(Integer id){
+        employeeDao.deleteEmployee(id);
+        return "redirect:/getAllEmployees";
+    }
+```
+
+
+
+### 404
+
+
+
+![1588693443697](SpringBoot.assets/1588693443697.png)
