@@ -1643,3 +1643,517 @@ spring:
 
 
 ![1588693443697](SpringBoot.assets/1588693443697.png)
+
+
+
+# 4.spring Date
+
+springboot 拥有自带的jdbc ： spring Date
+
+## 创建
+
+1.创建项目选择sql里的JDBC API 和MySQL Driver
+
+![1588754290656](SpringBoot.assets/1588754290656.png)
+
+2.查看依赖
+
+```xml
+<!--        jdbc-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+
+<!--        mysql driver-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+```
+
+3.创建数据库配置文件，名称必须为 application.yaml
+
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/springboot?useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: yzy665128
+    driver-class-name: com.mysql.cj.jdbc.Driver
+```
+
+4.测试
+
+```java
+@SpringBootTest
+class SpringbootDateApplicationTests {
+
+    @Autowired
+    DataSource dataSource;
+
+    @Test
+    void contextLoads() {
+//        查看使用的数据库驱动          class com.zaxxer.hikari.HikariDataSource
+        System.out.println(dataSource.getClass());
+    }
+
+}
+```
+
+5.点击配置文件的属性可以进入源代码查看datesource属性
+
+6.查看**jdbc模板**：可以通过引入包的AutoConfig->org->jdbc->jdbcTemplateConfiguration
+
+7.使用Jdbctemplate
+
+```java
+@RestController
+public class JDBCController {
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @RequestMapping("/s")
+    public List<Map<String,Object>> s(){
+        String sql = "select * from account";
+        List<Map<String, Object>> list = jdbcTemplate.queryForList(sql);
+        return list;
+    }
+//    resultful传参
+    @RequestMapping("/u/{id}")
+    public int u(@PathVariable("id") int id){
+        Object[] o  =new Object[2];
+        o[0] = "Y";
+        o[1] = 1;
+        String sql = "update account set name=? ,money = ? where id = "+id;
+//        占位符传参
+        int update = jdbcTemplate.update(sql,o);
+        return update;
+    }
+    @RequestMapping("/a")
+    public int a(){
+        Object[] o = new Object[3];
+        o[0] = 17;
+        o[1] = "JJ";
+        o[2] = 17;
+        String sql = "insert into account values(?,?,?)";
+        int insert = jdbcTemplate.update(sql,o);
+        return insert;
+    }
+    @RequestMapping("/d")
+    public int d(){
+        String sql = "delete from account where id = 17";
+        int delete = jdbcTemplate.update(sql);
+        return delete;
+    }
+}
+```
+
+8.结果
+
+![1588769619759](SpringBoot.assets/1588769619759.png)
+
+## druid
+
+1.导入
+
+```xml
+<!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid</artifactId>
+    <version>1.1.21</version>
+</dependency>
+```
+
+2.使用：在配置文件中指定
+
+```yaml
+spring:
+  datasource:
+   
+    # 指定数据池
+    type: com.alibaba.druid.pool.DruidDataSource
+```
+
+3.测试
+
+![1588771715007](SpringBoot.assets/1588771715007.png)
+
+4.创建druid配置类，并设置前缀与配置文件的属性相连
+
+```java
+@Configuration
+public class DruidConfig {
+
+    @Bean
+    @ConfigurationProperties(prefix = "spring.datasource")
+    public DataSource druidDataSource(){
+        return new DruidDataSource();
+    }
+}
+```
+
+5.配置类里配置管理员
+
+```java
+//    后台监控
+    @Bean
+//    因为springboot内置了tomcat，所以没有web.xml， 用ServletRegistrationBean替代了这个功能
+    public ServletRegistrationBean statViewServlet(){
+        ServletRegistrationBean<StatViewServlet> bean = new ServletRegistrationBean<>(new StatViewServlet(), "/druid/*");
+
+//        后台需要有人登陆
+        HashMap<String, String> hashMap = new HashMap<>();
+//          添加账号和密码  key的值固定不能变
+        hashMap.put("loginUsername","admin");
+        hashMap.put("loginPassword","123456");
+//        允许谁可以访问
+        hashMap.put("allow","");
+
+
+
+        bean.setInitParameters(hashMap);
+        return bean;
+    }
+```
+
+6.测试
+
+![1588776896730](SpringBoot.assets/1588776896730.png)
+
+7.登录，当执行一条搜索语句时，会显示记录
+
+![1588777269100](SpringBoot.assets/1588777269100.png)
+
+
+
+
+
+
+
+
+
+## 遇到的问题
+
+创建yaml文件，但是图标不是小绿叶
+
+![1588752434638](SpringBoot.assets/1588752434638.png)
+
+
+
+# 5.mybatis
+
+1.创建项目，和springDate一样
+
+2.导入mybatis整合springboot依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+        <dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <version>2.1.1</version>
+        </dependency>
+```
+
+3.配置连接数据库，步骤同springDate
+
+4.创建pojo类
+
+```java
+public class Account {
+    private int id;
+    private String name;
+    private float money;
+
+```
+
+5.创建业务接口
+
+​	dao.AccountDao
+
+```java
+// 代表这是一个mybatis的mapper类
+@Mapper
+public interface AccountDao {
+
+    List<Account> queryAllAccount();
+
+    int addAccount(Account account);
+
+    int deleteAccount(int id);
+
+    int updateAccount(Account account);
+}
+
+```
+
+6.配置mybatis
+
+ 	application.yaml
+
+```yaml
+
+mybatis:
+  #别名包
+  type-aliases-package: com.examle.springbootmybatis.pojo
+  #mapper所在位置
+  mapper-locations: classpath:mybatis/mapper/*.xml
+```
+
+7.创建mybatis实现类
+
+​		resource.mybatis.mapper.AccountMapper.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"        		   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--命名空间，绑定一个对应的Dao类,用于成为它的实现类-->
+<mapper namespace="com.example.springbootmybatis.dao">
+
+    <select id="queryAllAccount" resultType="Account">
+        select * from account
+    </select>
+
+    <insert id="addAccount" parameterMap="Account">
+        insert into accout values(#{id},#{name},#{money})
+    </insert>
+
+    <delete id="deleteAccount">
+        delete from account where id=#{id}
+    </delete>
+
+    <update id="updateAccount" parameterMap="Account">
+        update account set name=#{name},money=#{money} where id=#{id}
+    </update>
+
+</mapper>
+```
+
+
+
+## 遇到的问题
+
+1.未绑定
+
+​		原因：xml命名空间指定的是包
+
+​		解决：指定包的某个接口
+
+2.访问数据库失败
+
+![1588833163678](SpringBoot.assets/1588833163678.png)
+
+尝试换一下配置文件，比如本来用的yaml，换成properties
+
+
+
+# 6.安全
+
+拦截器和过滤器：原生代码
+
+
+
+## springSecurity
+
+> 介绍
+
+Spring Security是一个功能强大且高度可定制的身份验证和访问控制框架。它实际上是保护基于spring的应用程序的标准。
+
+Spring Security是一个框架，侧重于为Java应用程序提供身份验证和授权。与所有Spring项目一样，Spring安全性的真正强大之处在于它可以轻松地扩展以满足定制需求
+
+> 功能
+
+Spring Security 基于 Spring 框架，提供了一套 Web 应用安全性的完整解决方案。一般来说，Web 应用的安全性包括**用户认证（Authentication）**和**用户授权（Authorization）**两个部分。用户认证指的是验证某个用户是否为系统中的合法主体，也就是说**用户能否访问该系统**。用户认证一般要求用户提供用户名和密码。系统通过校验用户名和密码来完成认证过程。**用户授权指的是验证某个用户是否有权限执行某个操作**。在一个系统中，**不同用户所具有的权限是不同的**。比如对一个文件来说，有的用户只能进行读取，而有的用户可以进行修改。一般来说，系统会为不同的用户分配不同的角色，而每个角色则对应一系列的权限。
+
+对于上面提到的两种应用情景，Spring Security 框架都有很好的支持。**在用户认证方面，Spring Security 框架支持主流的认证方式**，包括 HTTP 基本认证、HTTP 表单验证、HTTP 摘要认证、OpenID 和 LDAP 等。**在用户授权方面，Spring Security 提供了基于角色的访问控制和访问控制列表（Access Control List，ACL）**，可以对应用中的领域对象进行细粒度的控制。
+
+
+
+### 前提
+
+1.创建项目，选择web和sql API , MySQL Driver
+
+2.导入themyleaf模板
+
+3.创建静态资源
+
+4.编写controller
+
+```java
+@org.springframework.stereotype.Controller
+public class Controller {
+
+    @RequestMapping({"/","/index"})
+    public String index(){
+        return "index";
+    }
+
+    @RequestMapping("/toLogin")
+    public String tologin(){
+        return "views/login";
+    }
+
+//    秒啊，根据id跳转对应的网页
+    @RequestMapping("/level1/{id}")
+    public String leavel1(@PathVariable("id") int id){
+        return "views/level1/"+id;
+    }
+
+    @RequestMapping("/level2/{id}")
+    public String leavel2(@PathVariable("id") int id){
+        return "views/level2/"+id;
+    }
+
+    @RequestMapping("/level3/{id}")
+    public String leavel3(@PathVariable("id") int id){
+        return "views/level3/"+id;
+    }
+}
+```
+
+5.运行
+
+![1588840370273](SpringBoot.assets/1588840370273.png)
+
+
+
+那么，怎么实现用户权限？使用AOP
+
+### 开始配置
+
+引入spring-boot-starter-security模块
+
+>  配置类
+
+- WebSecurityConfigurerAdapter      自定义Security策略
+- AuthenticationManagerBuilder       自定义认证策略
+- @EnableWebSercurity      开启WebSecurity模式
+
+
+
+1.导包
+
+```xml
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+```
+
+2.创建配置类，继承WebSecurityConfigurerAdapter,添加@EnableWebSercurity注解
+
+​		**设置访问内容需要的权限**
+
+```java
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+//              首页所有人都可以访问，功能页只有对应的权限得人才能访问
+        http.authorizeRequests()
+                .antMatchers("/").permitAll()
+                .antMatchers("/level1/**").hasRole("vip1")
+                .antMatchers("/level2/**").hasRole("vip2")
+                .antMatchers("/level3/**").hasRole("vip3");
+        
+        //        没有权限显示拒绝访问很难看，所以跳转到登录页
+        http.formLogin();
+    }
+}
+```
+
+3.再次访问
+
+![1588847000934](SpringBoot.assets/1588847000934.png)
+
+4.加入语句http.formLogin();**没有权限就跳转到登录页**
+
+**formLogin源码分析**
+
+![1588851630676](SpringBoot.assets/1588851630676.png)
+
+5.用户认证权限
+
+​	**创建几个用户并给予权限**
+
+```java
+//    认证    springboot版本2.1.x以上可以能会报错 提示密码编码为null
+//    添加密码编码.passwordEncoder
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        这些数据可以从数据库中读，也可以从内存中读，速度较快
+        auth.inMemoryAuthentication().passwordEncoder(new BCryptPasswordEncoder())
+         		.withUser("YY").password(new BCryptPasswordEncoder().encode("123456")).roles("vip1")
+                .and().withUser("YZY").password(new BCryptPasswordEncoder().encode("123456")).roles("vip2");
+    }
+}
+```
+
+6.登录“YY”账号（权限VIP1），选择vip2的网页，forbidden被禁止的
+
+![1588857719391](SpringBoot.assets/1588857719391.png)
+
+7.**注销**账号
+
+注销**源码**
+
+![1588863817786](SpringBoot.assets/1588863817786.png)
+
+在formLogin后面加  http.logout();
+
+
+
+8.想让拥有指定权限的用户不能看见其他**权限的内容**
+
+ 首页
+
+```html
+ <!--如果未登录，显示登录按钮
+                           认可：“没有登录” ，然后显示登录按钮-->
+                <div sec:authorize="!isAuthenticated()">
+                    <a class="item" th:href="@{/toLogin}">
+                        <i class="address card icon"></i> 登录
+                    </a>
+                </div>
+<!--                如果已登录，显示注销按钮和用户权限对应的n内容-->
+                <div sec:authorize="isAuthenticated()">
+
+                    <a class="item">
+                        用户名： <div sec:authentication="name"></div>
+                         权限 ：<div sec:authentication="authorities"></div>
+                    </a>
+                    <a class="item" th:href="@{/logout}">
+                        <i class="address card icon"></i> 注销
+                    </a>
+                </div>
+
+<!--        信息根据权限显示-->
+    <div sec:authorize="hasRole('vip2')" class="column"></div>
+		<div class="ui raised segment">
+                    <div class="ui">
+                        <div class="content">
+                            <h5 class="content">Level 2</h5>
+                            <hr>
+                            <div><a th:href="@{/level2/1}"><i class="bullhorn icon"></i> Level-2-1</a></div>
+                            <div><a th:href="@{/level2/2}"><i class="bullhorn icon"></i> Level-2-2</a></div>
+                            <div><a th:href="@{/level2/3}"><i class="bullhorn icon"></i> Level-2-3</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    <div sec:authorize="hasRole('vip3')" class="column"></div>
+```
+
+![1588866287863](SpringBoot.assets/1588866287863.png)
+
+登录后
+
+![1588866358883](SpringBoot.assets/1588866358883.png)
+
+![1588866401851](SpringBoot.assets/1588866401851.png)
