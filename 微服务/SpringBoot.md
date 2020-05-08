@@ -1956,7 +1956,7 @@ mybatis:
 
 拦截器和过滤器：原生代码
 
-
+AOP思想，横切进去，不用修改原来的代码
 
 ## springSecurity
 
@@ -2078,6 +2078,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 ![1588851630676](SpringBoot.assets/1588851630676.png)
 
+可以将security创建的登录页替换为自己编写的登录页
+
+```java
+//              定制登录页 loginPage
+        http.formLogin().loginPage("/toLogin");
+```
+
 5.用户认证权限
 
 ​	**创建几个用户并给予权限**
@@ -2157,3 +2164,218 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 ![1588866358883](SpringBoot.assets/1588866358883.png)
 
 ![1588866401851](SpringBoot.assets/1588866401851.png)
+
+
+
+## shiro
+
+> 什么是shiro
+
+apach shiro是一个Java的安全框架
+
+可以完成认证，授权，加密，会话管理，Web集成，缓存
+
+
+
+> 功能
+
+**Authentication**：身份认证/登录，验证用户是不是拥有相应的身份；
+**Authorization**：授权，即权限验证，验证某个已认证的用户是否拥有某个权限；即判断用
+		户是否能做事情，常见的如：验证某个用户是否拥有某个角色。或者细粒度的验证某个用
+		户对某个资源是否具有某个权限；
+**Session Manager**：会话管理，即用户登录后就是一次会话，在没有退出之前，它的所有信
+		息都在会话中；会话可以是普通 JavaSE 环境的，也可以是如 Web 环境的；
+**Cryptography**：加密，保护数据的安全性，如密码加密存储到数据库，而不是明文存储；
+**Web Support**：Web 支持，可以非常容易的集成到 Web 环境；
+**Caching**：缓存，比如用户登录后，其用户信息、拥有的角色/权限不必每次去查，这样可以提高效率；
+**Concurrency**：shiro 支持多线程应用的并发验证，即如在一个线程中开启另一个线程，能
+		把权限自动传播过去；
+**Testing**：提供测试支持；
+**Run As**：允许一个用户假装为另一个用户（如果他们允许）的身份进行访问；
+**Remember Me**：记住我，这个是非常常见的功能，即一次登录后，下次再来的话不用登录
+		记住一点，Shiro 不会去维护用户、维护权限；这些需要我们自己去设计/提供；然后通过
+		相应的接口注入给 Shiro 即可 
+
+
+
+> 核心
+
+ ![在这里插入图片描述](SpringBoot.assets/20181205210949620.png) 
+
+**三个核心组件**：Subject, SecurityManager 和 Realms.
+
+**Subject代表了当前用户的安全操作，SecurityManager则管理所有用户的安全操作。**
+
+**SecurityManager管理所有Subject**
+
+
+
+- **Subject**：
+
+  ​	即“当前操作用户”。但是，在Shiro中，Subject这一概念并不仅仅指人，也可以是第三方进程、后台帐户（Daemon Account）或其他类似事物。它仅仅意味着“当前跟软件交互的东西”。
+
+- **SecurityManager**：
+
+  ​	它是Shiro框架的==核心==，典型的Facade模式，Shiro通过SecurityManager来**管理内部组件实例，并通过它来提供安全管理的各种服务**。
+
+- **Realm**：
+
+   	Realm充当了**Shiro与应用安全数据间的“桥梁”或者“连接器”**。也就是说，当对用户执行认证（登录）和授权（访问控制）验证时，Shiro会从应用配置的Realm中查找用户及其权限信息。　　
+
+  
+
+　>  架构
+
+![在这里插入图片描述](SpringBoot.assets/20181205211620525.png)
+**Subject**：主体，可以看到主体可以是任何可以与应用交互的“用户”；
+**SecurityManager** ： 相 当 于 SpringMVC 中 的 DispatcherServlet ,是 Shiro 的心脏；所有具体的交互都通过 		SecurityManager 进行控制；它管理着所有 Subject、且负责进行认证和授权、及会话、缓存的管理。
+**Authenticator**：认证器，负责主体认证的，这是一个扩展点，如果用户觉得 Shiro 默认的不好，可以自定义实		现；其需要认证策略（Authentication Strategy），即什么情况下算用户认证通过了；
+**Authrizer**：授权器，或者访问控制器，用来决定主体是否有权限进行相应的操作；即控制着用户能访问应用中的	哪些功能；
+**Realm**：可以有 1 个或多个 Realm，可以认为是安全实体数据源，即用于获取安全实体的；可以是 JDBC 实现，		也可以是 LDAP 实现，或者内存实现等等；由用户提供；注意：Shiro不知道你的用户/权限存储在哪及以何种		格式存储；所以我们一般在应用中都需要实现自己的 Realm；
+**SessionManager**：管理session的生命周期.而 Shiro 并不仅仅可以用在 Web 环境，也可以用在如普通的 JavaSE 环境、EJB 等环境；所有呢，Shiro 就抽象了一个自己的 Session来管理主体与应用之间交互的数据；这样的话，比如我们在 Web 环境用，刚开始是一台Web 服务器；接着又上了台 EJB 服务器；这时想把两台服务器的会话数据放到一个地方，
+		这个时候就可以实现自己的分布式会话（如把数据放到 Memcached 服务器）；
+**SessionDAO**：DAO 大家都用过，数据访问对象，用于会话的 CRUD，比如我们想把 Session保存到数据库，那		么可以实现自己的 SessionDAO，通过如 JDBC 写到数据库；比如想把Session 放到 Memcached 中，可以实		现自己的 Memcached SessionDAO；另外 SessionDAO中可以使用 Cache 进行缓存，以提高性能；
+**CacheManager**：缓存控制器，来管理如用户、角色、权限等的缓存的；因为这些数据基本
+		上很少去改变，放到缓存中后可以提高访问的性能
+**Cryptography**：密码模块，Shiro 提高了一些常见的加密组件用于如密码加密 
+
+
+
+### 步骤
+
+1.导入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.shiro/shiro-core -->
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.30</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+```
+
+2.编写配置文件
+
+​	shiro.ini
+
+```ini
+[users]
+# user 'root' with password 'secret' and the 'admin' role
+root = secret, admin
+# user 'guest' with the password 'guest' and the 'guest' role
+guest = guest, guest
+# user 'presidentskroob' with password '12345' ("That's the same combination on
+# my luggage!!!" ;)), and role 'president'
+presidentskroob = 12345, president
+# user 'darkhelmet' with password 'ludicrousspeed' and roles 'darklord' and 'schwartz'
+darkhelmet = ludicrousspeed, darklord, schwartz
+# user 'lonestarr' with password 'vespa' and roles 'goodguy' and 'schwartz'
+lonestarr = vespa, goodguy, schwartz
+
+# -----------------------------------------------------------------------------
+# Roles with assigned permissions
+# -----------------------------------------------------------------------------
+[roles]
+# 'admin' role has all permissions, indicated by the wildcard '*'
+admin = *
+# The 'schwartz' role can do anything (*) with any lightsaber:
+schwartz = lightsaber:*
+# The 'goodguy' role is allowed to 'drive' (action) the winnebago (type) with
+# license plate 'eagle5' (instance specific id)
+goodguy = winnebago:drive:eagle5
+```
+
+3.运行文件
+
+```java
+public class Quickstart {
+    private static final transient Logger log = LoggerFactory.getLogger(Quickstart.class);
+    public static void main(String[] args) {
+        //      通过读取ini配置文件读取realms, users, roles and permissions         通过读取类路径根目录下的ini创建一个工厂
+        Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
+        SecurityManager securityManager = factory.getInstance();
+        // 对于这个简单的快速入门示例，使用SecurityManager可作为JVM单例访问。但大多数应用程序不会这样做而依赖于它们的容器配置或web.xml或webapps
+        SecurityUtils.setSecurityManager(securityManager);
+         /*这时，环境已经建立好了，上的都是模板，固定的*/
+
+
+        /*下面的是核心代码*/
+        // 获取当前执行的用户
+        Subject currentUser = SecurityUtils.getSubject();
+        // 通过用户获取session（这个session不是web的，而是shiro自身的，不需要wb）
+        Session session = currentUser.getSession();
+        session.setAttribute("someKey", "aValue");
+        String value = (String) session.getAttribute("someKey");
+        if (value.equals("aValue")) {
+            log.info("subject.session---------------------------------------- [" + value + "]");
+        }
+
+        // 判断当前用户是否被认证     Authenticated认证
+        if (!currentUser.isAuthenticated()) {
+//            Token令牌     生成一个账号密码令牌
+            UsernamePasswordToken token = new UsernamePasswordToken("lonestarr", "vespa");
+            token.setRememberMe(true);
+            try {
+                currentUser.login(token);     // 执行登录流程
+            } catch (UnknownAccountException uae) {
+                log.info("There is no user with username of " + token.getPrincipal());
+            } catch (IncorrectCredentialsException ice) {
+                log.info("Password for account " + token.getPrincipal() + " was incorrect!");
+            } catch (LockedAccountException lae) {
+                log.info("The account for username " + token.getPrincipal() + " is locked.  " +
+                        "Please contact your administrator to unlock it.");
+            }
+            // ... catch more exceptions here (maybe custom ones specific to your application?
+            catch (AuthenticationException ae) {
+                //unexpected condition?  error?
+            }
+        }
+
+        //say who they are:
+        //print their identifying principal (in this case, a username):
+        log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+
+        //测试当前用户是否有该权限
+        if (currentUser.hasRole("schwartz")) {
+            log.info("May the Schwartz be with you!");
+        } else {
+            log.info("Hello, mere mortal.");
+        }
+
+        //粗化的权限
+        if (currentUser.isPermitted("lightsaber:wield")) {
+            log.info("You may use a lightsaber ring.  Use it wisely.");
+        } else {
+            log.info("Sorry, lightsaber rings are for schwartz masters only.");
+        }
+
+        //细化（实例化）的权限:
+        if (currentUser.isPermitted("winnebago:drive:eagle5")) {
+            log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  " +
+                    "Here are the keys - have fun!");
+        } else {
+            log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
+        }
+
+        //注销
+        currentUser.logout();
+
+        System.exit(0);
+    }
+}
+
+```
+
