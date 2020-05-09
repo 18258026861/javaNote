@@ -57,7 +57,7 @@ SpringBoot **约定大于配置**，默认进行了很多配置，只需要很�
 
   http://blog.cuicc.com/blog/2015/07/22/microservices/# ![img](SpringBoot.assets/sketch.png)  
 
-# 第一个springboot项目
+## 第一个springboot项目
 
 ![1588213837946](SpringBoot.assets/1588213837946.png)
 
@@ -899,7 +899,7 @@ ${message}
 
 改良版
 
-```
+```html
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <!--使用thymeleaf语法，类似vue
@@ -1944,6 +1944,8 @@ mybatis:
 
 ​		解决：指定包的某个接口
 
+​		解决2：在resources下创建一个mapper文件夹，并把xml文件放进mapper文件夹
+
 2.访问数据库失败
 
 ![1588833163678](SpringBoot.assets/1588833163678.png)
@@ -2379,3 +2381,237 @@ public class Quickstart {
 
 ```
 
+
+
+
+
+### 整合springboot
+
+#### 前提
+
+创建页面用于区分用户权限（A用户只能去add，不能去update）
+
+1.创建新项目，导入web和thymeleaf 
+
+2.编写首页html，**放在templates目录下！**
+
+3.编写add,update页面，放在templates/user目录下
+
+4.编写controller跳转到首页，add，update
+
+
+
+
+
+#### 正式
+
+1.导入shiro-spring整合包
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.shiro/shiro-spring -->
+<dependency>
+    <groupId>org.apache.shiro</groupId>
+    <artifactId>shiro-spring</artifactId>
+    <version>1.5.3</version>
+</dependency>
+
+```
+
+2.编写配置类（基本框架），
+
+  先编写**realm**的类（需要自定义）
+
+```java
+public class realm extends AuthorizingRealm {
+
+//    授权
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+        System.out.println("realm认证----------------------AuthorizationInfo");
+        return null;
+    }
+
+//    认证
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        System.out.println("realm授权----------------------AuthenticationInfo");
+        return null;
+    }
+}
+```
+
+​	**shiroConfig**： ==顺序==是先realm，再manager，再factorybean
+
+```java
+@Configuration
+public class shiroConfig  {
+
+//   shiroFilterFactoryBan                        这是第三部，需要manage管理
+    @Bean
+    public ShiroFilterFactoryBean bean(@Qualifier("manager") DefaultWebSecurityManager defaultWebSecurityManager){
+        ShiroFilterFactoryBean bean = new ShiroFilterFactoryBean();
+//        设置安全管理器
+        bean.setSecurityManager(defaultWebSecurityManager);
+        return bean;
+    }
+
+//      DefaultWebSecurityManager               这是第二部，因为manager需要realm
+    @Bean(name="manager")
+    public DefaultWebSecurityManager defaultWebSecurityManager(@Qualifier("realm") realm realm){
+        DefaultWebSecurityManager defaultWebSecurityManager = new DefaultWebSecurityManager();
+//          关联realm   ,这里的参数不能直接realm（），因为realm是spring管理的，所以在方法的参数上用spring容器的bean对象
+        defaultWebSecurityManager.setRealm(realm);
+
+        return defaultWebSecurityManager;
+    }
+
+//    realm  对象，需要自定义（创建一个realm类）   这是第一步第一步
+    @Bean
+    public realm realm(){
+        return new realm();
+    }
+}
+```
+
+3.具体实现用户权限
+
+​	**bean**方法内
+
+```java
+HashMap<String,String> map = new HashMap<>();
+//        这里的资源写的是路径（controller里的），不是页面
+        map.put("/toadd","authc");
+        map.put("/toupdate","authc");
+//          设置过滤器的内容（哪些路径要被过滤及其访问权限）
+        bean.setFilterChainDefinitionMap(map);
+
+//        设置跳转登录页面，当被拦截时跳转到登录页面
+        bean.setLoginUrl("/tologin");
+```
+
+4.编写**controller登录操作**
+
+```java
+@RequestMapping("/login")
+    public String login(String username,String password,Model model){
+        //        获取当前用户
+        Subject subject = SecurityUtils.getSubject();
+//        封装用户的登录数据
+        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+        try{
+//      执行登录流程（所有验证的步骤shiro都帮我们做了）,如果错误就会报异常
+            subject.login(token);
+            return "index";
+        }catch (UnknownAccountException e){
+            model.addAttribute("msg","用户不存在");
+            return "/user/login";
+        }catch (IncorrectCredentialsException e){
+            model.addAttribute("msg","密码错误");
+            return "/user/login";
+        }
+    }
+```
+
+登录：
+
+![1589018057526](SpringBoot.assets/1589018057526.png)
+
+然后查看控制台：发现**执行了realm的方法**
+
+![1589018099538](SpringBoot.assets/1589018099538.png)
+
+两者之间我们并没有做什么联系，但是shiro就帮我们自动连接起来了，那么就可以**在realm中添加登录数据**
+
+5.realm编写数据获取和认证
+
+```java
+//    认证
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        System.out.println("realm认证----------------------AuthenticationInfo");
+
+//      可以从数据库获取数据  ，这里手动设置数据
+        String username="YY";
+        String pasword = "1";
+
+        UsernamePasswordToken usertoken =  (UsernamePasswordToken)token;
+//        账号认证  ，认证参数里的token是全局存在的，登陆那边封装好了，这边就可以用
+        if(!usertoken.getUsername().equals(username)){
+//            return null 即抛出异常，由于是判断username的，异常就是用户名不存在
+            return null;
+        }
+//        我们不做密码认证，有可能泄漏    。shiro暗地里做密码认证，
+        return new SimpleAuthenticationInfo("",pasword,"");
+    }
+```
+
+登录时会智能判断异常情况
+
+6.设置未授权页面
+
+```java
+//        设置未授权请求的页面
+        bean.setUnauthorizedUrl("/tounauthorized");
+```
+
+
+
+#### 整合mybatis
+
+前几部操作和springboot整合mybatis一样（可以多一步service层）
+
+1.在**realm的认证**中添加==数据库操作==
+
+```java
+//      从数据库获取数据
+        User user = userService.findUserByUsername(usertoken.getUsername());
+//        账号认证  ，认证参数里的token是全局存在的，登陆那边封装好了，这边就可以用
+        if(user==null){
+            return null;
+        }
+//        我们不做密码认证，有可能泄漏    。shiro暗地里做密码认证，
+        return new SimpleAuthenticationInfo("",user.getPassword(),"");
+    }
+```
+
+2.为当前用户添加==权限==
+
+ralme的授权方法（两种）
+
+- 为所有用户授予该权限
+- 通过认证中数据库操作获取user对象的权限并给予当前用户
+
+```java
+//    授权，用于授权账号
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+//      只要经过这里就会授权
+        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+//        为每个用户授予该权限
+//        info.addStringPermission("user:add");
+
+//        获取当前登录的用户
+        Subject subject = SecurityUtils.getSubject();
+//        从下面的密码认证第一个 user拿到  user对象
+        User user = (User)subject.getPrincipal();
+//        为subject设置数据库user对象里的权限
+        info.addStringPermission(user.getPerms());
+
+        return info;
+    }
+```
+
+**用户登录情况**：
+
+![1589038999712](SpringBoot.assets/1589038999712.png)
+
+```java
+		map.put("/toadd","perms[user:add]");
+        map.put("/toupdate","perms[user:update]");
+```
+
+那么当YY登录时，只能访问update页面
+
+​       当yzy登录时，不能访问任何网页
+
+​		当y登录时，能访问add网页
