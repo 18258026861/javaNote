@@ -2615,3 +2615,267 @@ ralme的授权方法（两种）
 ​       当yzy登录时，不能访问任何网页
 
 ​		当y登录时，能访问add网页
+
+
+
+#### 整合thymeleaf
+
+1.导包
+
+```xml
+<!--thymeleaf中使用shiro-->
+        <dependency>
+            <groupId>com.github.theborakompanioni</groupId>
+            <artifactId>thymeleaf-extras-shiro</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+```
+
+2.配置类Config，注册shiroDialect
+
+```java
+@Bean(name = "shiroDialect")
+    public ShiroDialect shiroDialect(){
+        return new ShiroDialect();
+    }
+```
+
+3.html
+
+```html
+<!-- 验证当前用户是否为“访客”，即未认证（包含未记住）的用户。 -->
+<p shiro:guest="">访客
+
+<!-- 认证通过或已记住的用户。 -->
+<p shiro:user="y">
+    认证通过活着已记住用户
+</p>
+
+<!-- 已认证通过的用户。不包含已记住的用户，这是与user标签的区别所在。 -->
+<p shiro:authenticated="user">
+    Hello, <span shiro:principal=""></span>, 已通过用户的信息
+</p>
+
+<!-- 输出当前用户信息，通常为登录帐号信息。 -->
+<p> 输出当前用户信息 <shiro:principal/></p>
+
+<!-- 未认证通过用户，与authenticated标签相对应。与guest标签的区别是，该标签包含已记住用户。 -->
+<p shiro:notAuthenticated="">
+    未认证通过用户
+</p>
+
+<!-- 验证当前用户是否属于该角色。 -->
+<a shiro:hasRole="YY" >你是否属于YY</a><!-- 拥有该角色 -->
+
+<!-- 与hasRole标签逻辑相反，当用户不属于该角色时验证通过。 -->
+<p shiro:lacksRole="developer"><!-- 没有该角色 -->
+    你不是YY
+</p>
+
+<!-- 验证当前用户是否属于以下所有角色。 -->
+<p shiro:hasAllRoles="developer, 2"><!-- 角色与判断 -->
+    You are a developer and a admin.
+</p>
+
+<!-- 验证当前用户是否属于以下任意一个角色。 -->
+<p shiro:hasAnyRoles="admin, vip, developer,1"><!-- 角色或判断 -->
+    You are a admin, vip, or developer.
+</p>
+
+<!--验证当前用户是否拥有指定权限。 -->
+<a shiro:hasPermission="user:update" >你拥有update权限</a><!-- 拥有权限 -->
+
+<!-- 与hasPermission标签逻辑相反，当前用户没有制定权限时，验证通过。 -->
+<p shiro:lacksPermission="user:add"><!-- 没有权限 -->
+    你没有add权限，但是看得到我
+</p>
+
+<!-- 验证当前用户是否拥有以下所有角色。 -->
+<p shiro:hasAllPermissions="user:add, user:update"><!-- 权限与判断 -->
+    你是update，add权限人员
+</p>
+
+<!-- 验证当前用户是否拥有以下任意一个权限。 -->
+<p shiro:hasAnyPermissions="user:add, user:update"><!-- 权限或判断 -->
+    你是update或add权限人员
+</p>
+```
+
+
+
+
+
+#### 总结
+
+shiro的执行流程：
+
+1.通过**controller**请求时，会触发**realm的认证方法AuthenticationInfo**
+
+​			**具体操作**：realm的AuthenticationInfo用于**验证数据是否正确**和**读取数据库数据**
+
+​				    如果通过认证，此时数据库的user就会变成subject
+
+
+
+2.**realm的授权方法AuthorizationInfo**会对当前用户**Subject**进行**授权**
+
+​			**具体操作**：realmd的AuthorizationInfo会从读取的数据为**当前用户授权（addStringPermission）**
+
+​					将数据库的user的权限赋给subject
+
+
+
+3.**DefaultWebSecurityManager**会**关联realm**和**ShiroFilterFactoryBean**
+
+​			**具体操作**：setRealm(realm) ：获取realm的数据
+
+
+
+4.**ShiroFilterFactoryBean**设置资源**权限**，设置登录和未授权**跳转页面**
+
+​			**具体操作**：1.setSecurityManager(defaultWebSecurityManager);   通过manager获取realm的数据
+
+​								2.map.put("/toadd","perms[user:add]");     设置资源的权限，并将map放入过滤器
+
+​								3. setXXXurl("")    											 设置跳转页面
+
+​					将资源设置和获取的数据进行对比，成功就访问，不成功跳转未授权页面
+
+5.controller根据shiro返回对应的信息
+
+
+
+
+
+# 7.Swagger
+
+> 背景
+
+**大后端**：前端只管理静态页面htmk，css，后端使用模板引擎
+
+**前后端分离**：
+
+- **后端**：后端控制器，服务层，数据访问层
+- **前端**：前端控制层，视图层
+  - 前端可以通过伪造后端数据，不依靠后端也能跑起来（前端工程化）
+- 前后端如何**交互**：通过接口，传递json数据
+- 前后端相对**独立**，松耦合，可以部署在不同的服务器上
+
+
+
+产生的问题：
+
+- 前后端沟通困难，改变业务麻烦
+
+解决问题
+
+- 指定完善的schema，实时更新API，降低集成风险
+- 前端测试后端接口：postman
+- 后端提供接口，需要实时更新最新更改
+
+
+
+## 优点
+
+更快捷更方便进行接口API的开发
+
+- 最流行的API框架
+- 是Resultful风格的API ，文档自动生成：**API文档与API定义同步更新**
+- 可以直接运行，在线测试API接口
+- 支持多种语言
+
+
+
+
+
+## 集合成springboot
+
+### 入门
+
+1.创建项目，选择web，然后导包
+
+```xml
+ <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+```
+
+2.配置Swagger
+
+  SwaggerConfig:什么都没写就是默认设置
+
+```java
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig {
+
+        
+}
+```
+
+3.编写controller和测试
+
+```java
+@RestController
+public class Controller {
+
+    @RequestMapping("/hi")
+    public String show(){
+        return "hi";
+    }
+}
+```
+
+访问网页 http://localhost:8080/swagger-ui.html 
+
+![1589123637598](SpringBoot.assets/1589123637598.png)
+
+
+
+### 配置Swagger
+
+Swagger的bean实例Docket
+
+```JAVA
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig {
+
+    @Bean
+    public Docket docket(@Qualifier("apiInfo") ApiInfo apiInfo){
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo);
+    }
+
+//    设置一个Swagger apiInfo  ,覆盖了默认apiInfo
+    @Bean
+    public ApiInfo apiInfo(){
+//      作者信息
+        Contact contact = new Contact("YZY","http://localhost:8080/swagger-ui.html#/","1061603811@qq.com");
+
+        return new ApiInfo("YZY的API文档",
+                "文档描述",
+                "1.1",
+                "http://localhost:8080/swagger-ui.html#/", contact,
+                "Apache 2.0",
+                "http://www.apache.org/licenses/LICENSE-2.0",
+                new ArrayList());
+    }
+
+}
+```
+
+测试
+
+![1589125939220](SpringBoot.assets/1589125939220.png)
