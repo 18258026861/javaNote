@@ -4,7 +4,7 @@
 
 ![1588145129189](SpringBoot.assets/1588145129189.png)
 
-> 什么事SpringBoot
+> 什么是SpringBoot
 
 SpringBoot基于Spring开发，并不是替代Spring，而是和Spring紧密结合用于提升Spring体验。
 
@@ -16,6 +16,12 @@ SpringBoot **约定大于配置**，默认进行了很多配置，只需要很�
 - 开箱即用，简化配置
 - 内嵌容器简化Web项目
 - 没有XML配置和冗余代码
+
+
+
+
+
+> 
 
 
 
@@ -2847,16 +2853,69 @@ public class Controller {
 
 Swagger的bean实例Docket
 
+- 过滤器  paths（PathSelectors.xxx）
+- 接口扫描 apis(RequestHandlerSelectors.XXX）
+- 开启关闭  enable（）
+- 分组   groupName（）
+- 文档信息  apiInfo（）
+
 ```JAVA
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
 
     @Bean
-    public Docket docket(@Qualifier("apiInfo") ApiInfo apiInfo){
-        return new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(apiInfo);
+    public Docket docket1(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y1Y");
     }
+    @Bean
+    public Docket docket2(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y2Y");
+    }
+
+    @Bean
+    public Docket docket(@Qualifier("apiInfo") ApiInfo apiInfo,Environment environment){
+        
+        Profiles dev = Profiles.of("dev");
+        boolean isdev = environment.acceptsProfiles(dev);
+
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo)
+                .enable(isdev)
+                .groupName("YZY")
+                .select()
+             .apis(RequestHandlerSelectors.basePackage("com.example.swagger.controller"))
+                .paths(PathSelectors.any())
+                .build();
+    }
+
+   
+
+    @Bean
+    public ApiInfo apiInfo(){
+
+        Contact contact = new Contact("YZY","http://localhost:8080/swagger-ui.html#/","1061603811@qq.com");
+        return new ApiInfo("YZY的API文档",
+                "文档描述",
+                "1.1",
+                "http://localhost:8080/swagger-ui.html#/", contact,
+                "Apache 2.0",
+                "http://www.apache.org/licenses/LICENSE-2.0",
+                new ArrayList());
+    }
+}
+```
+
+
+
+#### 文档信息
+
+可以自己设置一些文档信息
+
+```java
+		return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo)
+
 
 //    设置一个Swagger apiInfo  ,覆盖了默认apiInfo
     @Bean
@@ -2879,3 +2938,357 @@ public class SwaggerConfig {
 测试
 
 ![1589125939220](SpringBoot.assets/1589125939220.png)
+
+#### 扫描接口和过滤器
+
+使用Docket.select()
+
+```java
+		return new Docket(DocumentationType.SWAGGER_2)
+                .select()
+  /*RequestHandlerSelector：配置要扫描的接口
+        basePackage:指定要扫描的包
+            basePackage("com.example.swagger.controller") 扫描controller包里的接口
+        any: 所有接口
+        none：不扫描
+        withClassAnnotation 扫描类上的注解
+                withClassAnnotation(RestController.class)  扫描有RestAonroller注解的类
+         withMethodAnnotation 扫描方法上的注解
+                withMethodAnnotation(RequestMapping.class)  扫描有RequestMapping注解的方法*/
+                .apis(RequestHandlerSelectors.basePackage("com.example.swagger.controller"))
+            
+                /*paths过滤路径（参数是需要的，过滤掉不需要的）
+                *      PathSelector:路径选择器
+                *           ant：路径
+                            any:所有
+                            none：都不      */
+                .paths(PathSelectors.any())
+                .build();
+    }
+```
+
+
+
+#### 不同环境下开启关闭
+
+手动开启关闭swagger
+
+```java
+//  默认true
+.enable(false)
+```
+
+根据环境自动开启关闭
+
+![1589182320937](SpringBoot.assets/1589182320937.png)
+
+```java
+@Bean
+    public Docket docket(@Qualifier("apiInfo") ApiInfo apiInfo,Environment environment){
+
+//        设置swagger开启的环境
+        Profiles dev = Profiles.of("dev");
+//        获取当前项目的环境，判断swagger是否在开启的环境中
+        boolean isdev = environment.acceptsProfiles(dev);
+
+        return new Docket(DocumentationType.SWAGGER_2)
+				//  根据isdev是否开启              
+                .enable(isdev)
+```
+
+当前环境是dev，所以生效
+
+访问swagger，**注意端口是8081**
+
+
+
+#### 分组
+
+1.配置一个分组
+
+```java
+   .groupName("YZY")
+```
+
+测试
+
+![1589183082792](SpringBoot.assets/1589183082792.png)
+
+2.配置多个分组（即创建多个Docket方法）
+
+```java
+@Bean
+    public Docket docket1(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y1Y");
+    }
+    @Bean
+    public Docket docket2(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y2Y");
+    }
+```
+
+测试
+
+![1589183301532](SpringBoot.assets/1589183301532.png)
+
+#### 实体类
+
+定义一个user类
+
+然后在controller编写一个返回实体类的请求
+
+```
+@GetMapping("/user")
+    public User user(){
+        return new User();
+    }
+```
+
+测试
+
+![1589186138684](SpringBoot.assets/1589186138684.png)
+
+
+
+#### 注释
+
+> 为实体类添加注释
+
+```java
+//@ApiModel给实体类添加注释
+@ApiModel("用户")
+public class User implements Serializable {
+    private static final long serialVersionUID = -77061385939233351L;
+
+    private Integer id;
+
+//    @ApiModelProperty给属性添加注释
+    @ApiModelProperty("用户名")
+    private String username;
+
+    @ApiModelProperty("密码")
+    private String password;
+```
+
+![1589186516580](SpringBoot.assets/1589186516580.png)
+
+> 为controller加注释
+
+```
+//    ApiOperation 为controller的方法加注释
+    @ApiOperation("实体类")
+```
+
+
+
+### 测试
+
+![1589187242370](SpringBoot.assets/1589187242370.png)
+
+
+
+
+
+## 总结作用
+
+1.接口文档的设置（配置文件）
+
+2.在线测试
+
+在正式发布**需要关闭**为了安全和效率
+
+
+
+# 8.任务
+
+1.创建一个线程
+
+```java
+@Service
+public class AsyncService {
+
+    public void hello()  {
+        try {
+            Thread.sleep(3000);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            System.out.println("sleep-3000ms");
+        }
+
+    }
+}
+```
+
+2.在controller中调用
+
+```java
+@RestController
+public class Controller {
+
+    @Autowired
+    AsyncService asyncService;
+
+    @GetMapping("/sleep")
+    public String sleep(){
+        asyncService.hello();
+        return "sleep";
+    }
+}
+```
+
+测试，转圈三秒才会显示
+
+## 异步
+
+1.在**主程序**开启异步注解
+
+```java
+//开启异步注解
+@EnableAsync
+@SpringBootApplication
+public class AsyncTestApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(AsyncTestApplication.class, args);
+    }
+}
+```
+
+2.在**线程方法**中开启异步注解
+
+```java
+@Async
+    public void hello()  {
+        try {
+            Thread.sleep(3000);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            System.out.println("sleep-3000ms");
+        }
+    }
+```
+
+3.测试
+
+前端瞬间完成，而控制台输出会在3s后才显示
+
+## 定时
+
+两个源码
+
+```java
+TaskExecutionAutoConfiguration
+TaskSchedulingAutoConfiguration
+```
+
+主程序开启注解
+
+```
+//开启定时任务注解
+@EnableScheduling
+@SpringBootApplication
+public class AsyncTestApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(AsyncTestApplication.class, args);
+    }
+
+}
+```
+
+```java
+/*在一个特定的时间执行  ,scheduled注解，
+     使用cron表达式     秒   分  时  日  月  星期
+                       10，15 ： 10和15
+                       0-7   ： 0到7都是
+                       5/20  ： 每二十分钟的第五分钟，即25，45
+                       L ：每个的最后一个
+                        */
+    @Scheduled(cron = "0 * * * * ?")
+    public void onTime(){
+        System.out.println("定时执行方法");
+    }
+}
+```
+
+
+
+## 邮件
+
+1.导入依赖
+
+```xml
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+```
+
+2.配置
+
+
+
+# 分布式、集群
+
+## 集群
+
+ ![img](SpringBoot.assets/v2-e628e972ac34b597ba2c1f7f0d326705_720w.jpg) 
+
+ 集群主要描述了一个集合，一些相似的东西，提供相似的功能，这个就叫做集群 。比如同一个业务分布在多个服务器上。单个服务器压力过大，就需要放到多个服务器上减轻压力。
+
+但是多个服务器只能看成多个相同的节点，组合起来相当于一个大的服务器，成为一个集群，**共同执行一个业务**
+
+**交互**：使用**nginx负载均衡**，将请求分配到多个服务器上
+
+>  优点
+
+- **高吞吐量**：利用**负载均衡**，可以接收更多请求。
+- **高可用**：当有一台服务器挂了，还有其他服务器可以用，不会停止服务
+
+
+
+## 分布式
+
+将服务分布在不同的服务器上，相比于集群，**不同服务器负责不同的功能**。
+
+因为业务不同，需要**交互**：不同的服务器之间使用http或者**RPC**沟通
+
+
+
+> 优点
+
+- 资源合理分配（可以给需求量大的业务提供更好的资源，需求量小的分布分配更少资源）
+- 互相独立，便于拓展
+
+
+
+> 集群+分布式
+
+集群和分布式并不冲突。
+
+在分布式的基础上，需求量大的业务可以分散到多个服务器，实现更高的效率
+
+
+
+## RPC
+
+> 什么是 RPC
+
+Remote Proceduce Call**远程过程调用**    。 是一种技术思想而非一种规范或协议 
+
+**远程**：如果是单片式的，一台电脑上可以调用本地的其他方法，但是分布式在不同的服务器上，需要网络跨越调用
+
+分布式的通信
+
+
+
+- 应用级的服务框架：阿里的 Dubbo/Dubbox、Google gRPC、Spring Boot/Spring Cloud。
+- 远程通信协议：RMI、Socket、SOAP(HTTP XML)、REST(HTTP JSON)。
+- 通信框架：MINA 和 Netty。
+
+ ![img](SpringBoot.assets/fd5b5686336b0a1212398d8ea8fe6f66.jpg-wh_651x-s_3461264051.jpg) 
+
+==核心==：通讯，序列化（传输数据需要转化）
