@@ -3231,9 +3231,20 @@ public class AsyncTestApplication {
 
 
 
-# 分布式、集群
+# 9.Dubbo+zookeeper
 
-## 集群
+## 架构发展
+
+### 单一应用架构
+
+当网站流量很小时，只需一个应用，将所有功能都部署在一起，以减少部署节点和成本。此时，用于简化增删改查工作量的数据访问框架(ORM)是关键。
+
+> 缺点
+
+- 不便于拓展：所有服无都在一个服务器里，维护只能将全部服务都停掉
+- 吞吐量小：只有一台服务器接受所有请求
+
+### 集群
 
  ![img](SpringBoot.assets/v2-e628e972ac34b597ba2c1f7f0d326705_720w.jpg) 
 
@@ -3250,7 +3261,7 @@ public class AsyncTestApplication {
 
 
 
-## 分布式
+### 分布式
 
 将服务分布在不同的服务器上，相比于集群，**不同服务器负责不同的功能**。
 
@@ -3273,6 +3284,29 @@ public class AsyncTestApplication {
 
 
 
+### 流式计算框架
+
+成立一个注册中心，所有接口在注册中心注册同一调用。注册中心根据流量大小分配管理。
+
+ ![img](https://images2015.cnblogs.com/blog/880309/201705/880309-20170514190347066-1095632262.png) 
+
+
+
+## 解决微服务架构的四个方面
+
+- API 网关（客户端如何访问）
+- RPC框架（服务端如何通信）
+- 服务注册于发现（如何管理这么多服务）
+- 熔断机制（服务器挂了怎么办）
+
+
+
+1. springcloud
+2. dubbo—zookeeper
+3. 
+
+
+
 ## RPC
 
 > 什么是 RPC
@@ -3292,3 +3326,171 @@ Remote Proceduce Call**远程过程调用**    。 是一种技术思想而非�
  ![img](SpringBoot.assets/fd5b5686336b0a1212398d8ea8fe6f66.jpg-wh_651x-s_3461264051.jpg) 
 
 ==核心==：通讯，序列化（传输数据需要转化）
+
+
+
+## Dubbo介绍
+
+
+
+### 流程
+
+![1589251685797](SpringBoot.assets/1589251685797.png)
+
+0. 服务容器负责启动，加载，运行服务提供者。
+
+1. 服务提供者在启动时，向注册中心注册自己提供的服务。
+2. 服务消费者在启动时，向注册中心订阅自己所需的服务。
+3. 注册中心返回服务提供者地址列表给消费者，如果有变更，注册中心将基于长连接推送变更数据给消费者。
+4. 服务消费者，从提供者地址列表中，基于软负载均衡算法，选一台提供者进行调用，如果调用失败，再选另一台调用。
+5. 服务消费者和提供者，在内存中累计调用次数和调用时间，定时每分钟发送一次统计数据到监控中心。
+
+**KFC版**
+
+0. KFC制作汉堡包
+1. 将汉堡包放到在线平台上
+2. 消费者在平台上点汉堡包
+3. 平台给消费者取货码
+4. 消费者去KFC前台拿汉堡包
+5. 会计统计汉堡包点餐次数
+
+
+
+### zomkepper作为服务中心
+
+安装流程：
+
+1.下载zookeeper(3.55以后的版本使用bin标识的压缩包)
+
+2.打开**bin**文件夹，使用**管理员权限**运行**zkserver.cmd**
+
+3.如果遇到**问题**
+
+​	**闪退**：编辑，在文末加上**pause**
+
+​    再次打开：![1589254730547](SpringBoot.assets/1589254730547.png)
+
+   按照他的路径，发现没有zoo.cfg，复制zoo_sample，改名成zoo.cfg,将文件地址改成
+
+```
+dataDir=D:\\环境\\zookeeper\\data
+dataLogDir=D:\\环境\\zookeeper\\log
+```
+
+   再次运行，虽然卡在端口，但是已经成功开启了
+
+![1589257593562](SpringBoot.assets/1589257593562.png)
+
+4.操作zookeeper
+
+![1589259997417](SpringBoot.assets/1589259997417.png)
+
+### dobbo-admin
+
+​	**一个用于监控和管理的后台**
+
+>  步骤
+
+​    1.下载：在admin主目录打开cmd，输入mvn clean package,在target获得jr包.
+
+​    2.注意，需要先打开zookeeper 的 server服务
+
+​    3.在target目录下打开powershell窗口输入 java -jar   .\dubbo-admin-0.0.1-SNAPSHOT.jar
+
+​	4.访问localhost:7001,账号密码为root
+
+![1589270970827](SpringBoot.assets/1589270970827.png)
+
+## 创建Dubbo
+
+### 步骤
+
+#### 提供者
+
+​	1.导包
+
+```xml
+<!--        dubbo依赖-->
+        <!-- https://mvnrepository.com/artifact/org.apache.dubbo/dubbo-spring-boot-starter -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <!--        zookeeper 客户端-->
+        <!-- https://mvnrepository.com/artifact/com.github.sgroschupf/zkclient -->
+        <dependency>
+            <groupId>com.github.sgroschupf</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <!--        zookeeper依赖-->
+        <!-- https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.14</version>
+            <!--            日志换产生冲突，排除日志-->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>2.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>2.12.0</version>
+        </dependency>
+```
+
+​	2.创建两个项目，customer,provider，配置dubbo
+
+```properties
+# 服务器名字
+dubbo.application.name=provider
+# 注册中心的地址
+dubbo.registry.address=zookeeper://127.0.0.1:2181
+# 扫描要注册的包
+dubbo.scan.base-packages=com.example.provider.service
+```
+
+​	3.实现类添加注解
+
+```java
+@Service
+@Component
+public class ProviderServiceImple implements ProviderService {
+```
+
+​	4.打开zookeeper-admin，可以找到注册了
+
+![1589282366838](SpringBoot.assets/1589282366838.png)
+
+![1589282377637](SpringBoot.assets/1589282377637.png)
+
+#### 消费者
+
+​	1.导包
+
+​	2.dubbo消费者的配置
+
+```
+
+```
+
+
+
+### 错误
+
+org.apache.zookeeper.KeeperException$UnimplementedException
+
+查看发现有了两个版本的zookeeper，一个3.6.1，一个3.4.14.
+
+删除了3.6.1，提示找不到dubbo，无奈之下，只能重新创建一个新的项目。这次只有3.4.14，就可以跑起来
