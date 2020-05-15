@@ -661,7 +661,7 @@ MapperRegister：注册绑定Mapper文件
 
 SqlSessionFactoryBuilder  ->   SqlSessionFactory -> sqlSession
 
-#### SqlSessionFactoryBuilder  
+#### SqlSessionFactoryBuilder
 
 用于创建SqlSessionFactoryBuilder，创建完就没用了，所以适合于局部变量
 
@@ -683,7 +683,7 @@ SqlSessionFactoryBuilder  ->   SqlSessionFactory -> sqlSession
 -  SqlSession 的实例不是线程安全的，因此是不能被共享的，所以它的最佳的作用域是请求或方法作用域 
 -  关闭操作很重要 
 
-## 6.6 ResultMap
+## 6 ResultMap
 
  当数据库 money字段和java m字段不一致
 

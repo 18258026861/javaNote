@@ -2713,15 +2713,13 @@ ralme的授权方法（两种）
 
 #### 总结
 
-shiro的执行流程：
+shiro的具体执行流程：
 
-1.通过**controller**请求时，会触发**realm的认证方法AuthenticationInfo**
+1.通过**controller**请求时，会触发**realm的认证方法AuthenticationInfo**（通过token连接）
 
 ​			**具体操作**：realm的AuthenticationInfo用于**验证数据是否正确**和**读取数据库数据**
 
 ​				    如果通过认证，此时数据库的user就会变成subject
-
-
 
 2.**realm的授权方法AuthorizationInfo**会对当前用户**Subject**进行**授权**
 
@@ -2729,13 +2727,9 @@ shiro的执行流程：
 
 ​					将数据库的user的权限赋给subject
 
-
-
 3.**DefaultWebSecurityManager**会**关联realm**和**ShiroFilterFactoryBean**
 
 ​			**具体操作**：setRealm(realm) ：获取realm的数据
-
-
 
 4.**ShiroFilterFactoryBean**设置资源**权限**，设置登录和未授权**跳转页面**
 
@@ -2749,7 +2743,50 @@ shiro的执行流程：
 
 5.controller根据shiro返回对应的信息
 
+> 流程
 
+1.controller 以**token为媒介**，将参数传递给realm。subject的**login会将登录流程交给realm**，返回结果
+
+```java
+Subject subject = SecurityUtils.getSubject();
+//          封装前端传来的信息
+        UsernamePasswordToken token = new UsernamePasswordToken(username,password);
+        try {
+            //        为当前用户登录该账号密码，这个方法会在realm中验证是否正确然后异常
+            subject.login(token);
+```
+
+2.realm 通过token媒介获得的参数，验证参数是否正确
+
+```java
+//          token是连接controller和realm的桥梁，通过token得到controller传过来的账号密码
+        UsernamePasswordToken token1 = (UsernamePasswordToken) token;
+//          读取账号密码进行比较
+		if(!token1.getUsername().equals(username)){
+```
+
+3.登录成功，将权限赋予给当前用户
+
+
+
+4.DefaultWebSecurityManager 获得realm
+
+```java
+        manager.setRealm(realm());
+```
+
+5.ShiroFilterFactoryBean纳入DefaultWebSecurityManager管理，并设置拦截路径等信息
+
+```java
+        map.put("/admin/tags","authc");
+//      设置过滤路径
+        bean.setFilterChainDefinitionMap(map);
+//        将当前用户纳入安全管理
+        bean.setSecurityManager(manager);
+//      设置登录页面路径
+        bean.setLoginUrl("/admin/tologin");
+
+```
 
 
 
@@ -3331,7 +3368,7 @@ Remote Proceduce Call**远程过程调用**    。 是一种技术思想而非�
 
 ## Dubbo介绍
 
-
+一个RPC的框架，用于管理服务器之间的通信
 
 ### 流程
 
@@ -3353,6 +3390,20 @@ Remote Proceduce Call**远程过程调用**    。 是一种技术思想而非�
 3. 平台给消费者取货码
 4. 消费者去KFC前台拿汉堡包
 5. 会计统计汉堡包点餐次数
+
+
+
+![1589363429621](SpringBoot.assets/1589363429621.png)
+
+
+
+### 优点
+
+- 高性能的RPC通信能力
+- 智能负载均衡
+- 注册中心管理服务器，自动注册与发现
+- 运行流量调控，灰度发布
+- 
 
 
 
@@ -3450,7 +3501,7 @@ dataLogDir=D:\\环境\\zookeeper\\log
         </dependency>
 ```
 
-​	2.创建两个项目，customer,provider，配置dubbo
+​	2.application.properties配置dubbo信息
 
 ```properties
 # 服务器名字
@@ -3469,7 +3520,17 @@ dubbo.scan.base-packages=com.example.provider.service
 public class ProviderServiceImple implements ProviderService {
 ```
 
-​	4.打开zookeeper-admin，可以找到注册了
+​	4.添加注解类 **ProviderConfig**（可加可不加）
+
+```java
+@Configuration
+@EnableDubbo(scanBasePackages = "org.example.provider.service")
+@PropertySource("classpath:application.properties")
+public class ProviderConfig {
+}
+```
+
+​	5.打开zookeeper-admin，可以找到注册了
 
 ![1589282366838](SpringBoot.assets/1589282366838.png)
 
@@ -3481,16 +3542,110 @@ public class ProviderServiceImple implements ProviderService {
 
 ​	2.dubbo消费者的配置
 
+```java
+@Component
+public class CustomerServiceImpl implements CustomerService {
+
+    @Reference
+    private ProviderService providerService;
+
+    @Override
+    public String customer() {
+        return providerService.provide();
+    }
+}
 ```
 
+​	3.配置类同消费者
+
+​	4.测试
+
+```
+@SpringBootTest
+class CustomerApplicationTests {
+
+
+    @Autowired
+    CustomerService service;
+
+    @Test
+    void contextLoads() {
+        System.out.println(service.customer());
+        service.customer();
+    }
+
+}
 ```
 
 
 
 ### 错误
 
-org.apache.zookeeper.KeeperException$UnimplementedException
+1.org.apache.zookeeper.KeeperException$UnimplementedException
+
+
 
 查看发现有了两个版本的zookeeper，一个3.6.1，一个3.4.14.
 
 删除了3.6.1，提示找不到dubbo，无奈之下，只能重新创建一个新的项目。这次只有3.4.14，就可以跑起来
+
+
+
+2.消费者调用提供者包时空指针
+
+问题：@Reference的注解不是dubbo的注解
+
+解决方法：换成dubbo的注解
+
+
+
+3.Failed to check the status of the service com.example.interfaces.service.ProviderService. No provider available for the service
+
+问题：消费者调用时找不到提供者
+
+解决方法：在配置文件加上一句不检查
+
+```properties
+dubbo.consumer.check=false
+```
+
+
+
+# 10.blog
+
+
+
+## 需求分析
+
+### 用户
+
+
+
+- 
+
+
+
+
+
+## 问题
+
+1.忘记设置主页
+
+​     **controller  @RequsetMapping("/")**
+
+
+
+2. Circular view path [index]: would dispatch back to the current handler URL [/index] again. Check your ViewResolver setup! (Hint: This may be the result of an unspecified view, due to default view name generation.)  
+
+   没有导入thymeleaf，
+   
+   
+
+2.mybatis的注解不熟练
+
+
+
+3.shiro不熟练
+
+
+
