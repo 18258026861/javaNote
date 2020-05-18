@@ -928,7 +928,11 @@ ${message}
 
 >  获取静态资源需要@{路径}
 
+
+
 ```js
+// src的默认路径是static路径下（起手加/）  static
+th:src = "@{/img/ss.png}"
 th:href = "@{/css/**}"
 ```
 
