@@ -1,6 +1,10 @@
 # Blog
 
+时间线：
 
+5.14-5.16：type部分
+
+5.17-5.19：blog部分
 
 ## 需求分析
 
@@ -346,13 +350,15 @@ function a() {
   - 首页新增按钮跳转编写博客页面
   - 点击创建写入数据库
 
-![1589803887273](blog.assets/1589803887273.png)
+![1589897244165](blog.assets/1589897244165.png)
+
+![1589897543129](blog.assets/1589897543129.png)
 
 1.博客首页
 
 ```java
  /*跳转模块*/
-    @RequestMapping("/blogs")
+   @RequestMapping("/blogs")
     public String adminblogs(Model model){
         model.addAttribute("blogs",blogService.queryBlogs());
         model.addAttribute("types",typeService.queryTypes());
@@ -364,11 +370,12 @@ function a() {
 
 ```java
 @RequestMapping("/query")
-//                      required可以为空
-    public String query(@RequestParam(value = "title",required = false)String title,@RequestParam(value = "typeId",required = false)Long typeId, Model model){
+    public String query(@RequestParam(value = "title",required = false)String title,
+                        @RequestParam(value = "typeId",required = false)Long typeId,
+                        Model model){
         SearchBlog blog = new SearchBlog(title,typeId);
         model.addAttribute("types",typeService.queryTypes());
-        model.addAttribute("blogs",blogService.queryBlogByName(blog));
+        model.addAttribute("blogs",blogService.queryBlogByTitleAndType(blog));
         return "admin/blogs";
     }
 ```
@@ -376,14 +383,14 @@ function a() {
 mybatis**模糊查询**
 
 ```xml
-<select id="queryBlogByName" parameterType="SearchBlog" resultMap="blog">
-        select b.id bid,b.title,t.name tname,b.create_time,b.type_id btid,t.id tid,t.name tname, b.recommend from t_blog b,t_type t
+<select id="queryBlogByTitleAndType" parameterType="SearchBlog" resultMap="blog">
+        select b.published,b.id bid,b.title,t.name tname,b.create_time,b.type_id btid,t.id tid,t.name tname from t_blog b,t_type t
         <where>
             b.type_id = t.id
             <if test="title!=null">
                 and b.title like CONCAT(CONCAT('%',#{title}),'%')
              </if>
-             <if test="typeId !=null ">
+             <if test="typeId !=null">
                 and t.id = #{typeId}
              </if>
         </where>
@@ -391,10 +398,14 @@ mybatis**模糊查询**
 
 <resultMap id="blog" type="Blog">
         <id property="id" column="bid"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+        <result property="firstPicture" column="first_picture"/>
+        <result property="pblished" column="published"/>
         <result property="title" column="title"/>
         <result property="updateTime" column="update_time"/>
+        <result property="views" column="views"/>
         <result property="typeId" column="type_id"/>
-        <result property="recommend" column="recommend"/>
         <association property="type" javaType="Type">
             <id property="id" column="tid"/>
             <result property="name" column="tname"/>
@@ -402,7 +413,86 @@ mybatis**模糊查询**
     </resultMap>
 ```
 
-3.
+3.增加博客
+
+```java
+@RequestMapping("/add")
+    public String add(String title,boolean pblished,Long typeId,String content,
+    @RequestParam(value = "firstPicture",required = false)String firstPicture,
+                      Model model){
+
+        Blog blog1 = blogService.queryBlogByName(title);
+        if(blog1==null){
+            Blog blog = new Blog();
+            blog.setTitle(title);
+            blog.setContent(content);
+            blog.setTypeId(typeId);
+            blog.setCreateTime(new Date());
+            blog.setUpdateTime(new Date());
+            blog.setFirstPicture(firstPicture);
+            blog.setPblished(pblished);
+            blog.setViews(0);
+            int i = blogService.addBlog(blog);
+            if(i>0){
+                model.addAttribute("blogInfo","添加成功");
+            }else
+                model.addAttribute("blogInfo","添加失败");
+            model.addAttribute("blogs",blogService.queryBlogs());
+            model.addAttribute("types",typeService.queryTypes());
+        }else
+            model.addAttribute("blogInfo","该标题已存在");
+        return "admin/blogs";
+    }
+```
+
+4.删除博客
+
+```java
+@RequestMapping("/delete")
+    public String delete(Long id,Model model){
+        int i = blogService.deleteBlog(id);
+        if(i>0){
+            model.addAttribute("bloginfo","删除成功");
+        }else
+            model.addAttribute("bloginfo","删除失败");
+        model.addAttribute("blogs",blogService.queryBlogs());
+        model.addAttribute("types",typeService.queryTypes());
+        return "admin/blogs";
+    }
+```
+
+5.跳转页面并修改博客
+
+```java
+@RequestMapping("/blogs-edit")
+    public String blogsedit(Long id,Model model){
+        model.addAttribute("blog",blogService.queryBlogById(id));
+        model.addAttribute("types",typeService.queryTypes());
+        return "admin/blogs-edit";
+    }
+
+@RequestMapping("/update")
+    public String update(Long id, String title,boolean pblished, Long typeId, String content,
+                      @RequestParam(value = "firstPicture",required = false)String firstPicture,
+                      Model model){
+        Blog blog = new Blog();
+        blog.setId(id);
+        blog.setTitle(title);
+        blog.setContent(content);
+        blog.setTypeId(typeId);
+        blog.setUpdateTime(new Date());
+        blog.setFirstPicture(firstPicture);
+        blog.setPblished(pblished);
+        int i = blogService.updateBlog(blog);
+        if(i>0){
+            model.addAttribute("bloginfo","修改成功");
+        }else
+            model.addAttribute("bloginfo","修改失败");
+        model.addAttribute("blogs",blogService.queryBlogs());
+        model.addAttribute("types",typeService.queryTypes());
+        return "admin/blogs";
+    }
+```
 
 
 
@@ -504,6 +594,56 @@ controller
 <div class="menu" >
                 <div th:each="type:${types}" class="item" th:data-value="${type.id}" th:text="${type.getName()}"></div>
               </div>
+```
+
+
+
+#### 表单获取后端数据
+
+1.在表单获取对象，在输入框使用*{}
+
+```html
+<form th:action="@{/blog/update}" method="post" class="ui form" th:object="${blog}">
+```
+
+```html
+<input type="hidden" name="id" th:text="*{id}" readonly="readonly">
+```
+
+2.直接在输入框使用${}
+
+```html
+<input type="hidden" name="id" th:text="${blog.id}" readonly="readonly">
+```
+
+#### 输入框不能为空
+
+```js
+$('.ui.form').form({
+      fields : {
+        title : {
+          identifier: 'title',
+          rules: [{
+            type : 'empty',
+            prompt: '标题：请输入博客标题'
+          }]
+        },
+        content : {
+            identifier: 'content',
+            rules: [{
+                type : 'empty',
+                prompt: '内容：请输入博客内容'
+            }]
+        },
+          typeId : {
+              identifier: 'typeId',
+              rules: [{
+                  type : 'empty',
+                  prompt: '分类：请输入博客分类'
+              }]
+          },
+      }
+    });
 ```
 
 
