@@ -1,5 +1,7 @@
 # Blog
 
+搭建个人博客
+
 时间线：
 
 5.14-5.16：type部分
@@ -134,7 +136,7 @@
 
 # 开发
 
-## 管理员
+## 后端管理
 
 ### 实体类
 
@@ -500,6 +502,266 @@ mybatis**模糊查询**
 
 
 
+## 前端展示
+
+
+
+### 复用
+
+#### 导航栏
+
+- 跳转首页
+- 跳转分类页面
+- 跳转归档
+- 跳转关于我
+- 博客搜索
+
+![1589961423537](blog.assets/1589961423537.png)
+
+```html
+<!--导航-->
+<nav class="ui inverted attached segment m-padded-tb-mini " th:fragment="nav">
+
+<a th:href="@{/}" class=" m-item item m-mobile-hide"><i class="home icon"></i>首页</a>
+            <a th:href="@{/types}" class="item "><i class="idea icon"></i>分类</a>
+            <a th:href="@{/archives}" class="item"><i class="clone icon"></i>归档</a>
+            <a th:href="@{/about}" class="item"><i class="info icon"></i>关于我</a>
+    
+    <!--    搜索框-->
+                    <form th:action="@{/search}">
+                    <input name="title" type="text" placeholder="Search....">
+                    <i class="search link icon"><input type="submit"> </i>
+                    </form>
+```
+
+
+
+
+
+#### 底部
+
+- 二维码
+
+- 联系方式
+- 博客信息
+
+![1589961411999](blog.assets/1589961411999.png)
+
+```html
+<!--底部footer-->
+<footer  class="ui inverted vertical segment m-padded-tb-massive"th:fragment="foot">
+    
+    <!--联系方式-->
+            <div class="three wide column">
+                <h4 class="ui inverted header m-text-thin m-text-spaced ">联系我</h4>
+                <div class="ui inverted link list">
+                    <a href="#" class="item m-text-thin">Email：w1061603811@gmail.com</a>
+                    <a href="#" class="item m-text-thin">QQ：1061603811</a>
+                </div>
+            </div>
+            <!--博客介绍-->
+            <div class="seven wide column">
+                <h4 class="ui inverted header m-text-thin m-text-spaced ">Blog</h4>
+                <p class="m-text-thin m-text-spaced m-opacity-mini">这是yzy个人博客</p>
+            </div>
+```
+
+
+
+### 首页
+
+- 默认页面为首页
+- 左侧为全部博客信息
+  - 博客包含标题，简介，作者，时间，浏览量，首图和所属的分类
+
+- 右侧为分类信息和推荐博客
+
+- 点击博客跳转博客具体信息页面
+
+
+
+
+
+1.显示博客信息
+
+```html
+ <!--导航-->
+  <div th:insert="~{/common/common::nav}"></div>
+  
+  		<!--显示博客数量-->
+              <div class="right aligned column">
+                共 <h2 class="ui orange header m-inline-block m-text-thin" th:text="${blogs.size()}"></h2> 篇
+              </div>
+
+			<!--博客标题，点击跳转-->
+                  <h2  class="ui header" ><a th:href="@{/blog(id=${blog.getId()})}" th:text="${blog.getTitle()}" class="m-black" ></a></h2>
+                  <!--博客简介-->
+                  <p class="m-text" th:text="${blog.getDescription()}"></p>
+
+		<!--作者头像-->
+<img src="https://unsplash.it/100/100?image=1005" th:src="@{/images/jlq.png}" alt="" class="ui avatar image">
+         <!--作者-->
+<div class="content"><a href="#" class="header" th:text="${blog.author}"></a></div>
+ 		<!--更新时间-->
+ <i class="calendar icon"></i><span th:text="${#dates.format(blog.updateTime,'yyyy-MM-dd')}"></span>
+ 		<!--浏览量-->           
+      <i class="eye icon"></i> <span th:text="${blog.getViews()}"></span>
+		<!--博客所属分类-->
+		<a th:href="@{/type}" target="_blank" class="ui teal basic label m-padded-tiny m-text-thin" th:text="${blog.getType().getName()}"></a>
+         <!--首图-->
+        <img th:src="${blog.getFirstPicture()}" alt="" class="ui rounded image">
+```
+
+2.搜索
+
+```java
+@RequestMapping("/search")
+    public String search(@RequestParam(value = "title",required = false) String title, Model model){
+        SearchBlog blog = new SearchBlog();
+        blog.setTitle(title);
+        model.addAttribute("types",typeService.queryTypes());
+        model.addAttribute("blogs",blogService.queryBlogByTitleAndType(blog));
+        return "index";
+    }
+```
+
+
+
+![1589963480014](blog.assets/1589963480014.png)
+
+
+
+### 分类页
+
+- 上面显示所有分类和分类拥有的博客数量
+  - 点击分类显示分类拥有的所有博客信息
+
+- 第一次跳转显示所有博客信息，点击分类显示该分类下的博客信息
+
+```html
+<!--分类名和博客数量-->
+          <a th:href="@{/queryblogsbytype(id=${type.getId()})}" class="ui basic teal button" th:text="${type.getName()}"></a>
+          <div class="ui basic teal left pointing label" th:text="${#arrays.length(type.blogs)}"></div>
+```
+
+1.点击分类
+
+```html
+<a th:href="@{/queryblogsbytype(id=${type.getId()})}" class="ui basic teal button" th:text="${type.getName()}"></a>
+```
+
+跳转
+
+```java
+@RequestMapping("/queryblogsbytype")
+    public String queryblogsbytype(Long id,Model model){
+        model.addAttribute("blogs",typeService.queryBlogsByType(id));
+        model.addAttribute("types",typeService.queryTypes());
+        return "types";
+    }
+```
+
+
+
+### 博客详情页
+
+- 通过点击标题跳转到博客具体页面‘
+- 显示作者，时间，浏览数，正文，简介，博客信息
+- 悬浮条（返回顶部，目录，留言）
+
+- 文章正文需要将content转换成markdown格式才能正常显示
+
+
+
+1.转换markdown
+
+引入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/com.atlassian.commonmark/commonmark -->
+<dependency>
+    <groupId>com.atlassian.commonmark</groupId>
+    <artifactId>commonmark</artifactId>
+    <version>0.14.0</version>
+</dependency>
+```
+
+创建工具类
+
+```java
+public class MarkdownUtils {
+    public static String markdownToHtml(String markdown) {
+        Parser parser = Parser.builder().build();
+        Node document = parser.parse(markdown);
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        return renderer.render(document);
+    }
+    /**
+     * 增加扩展[标题锚点，表格生成]
+     * Markdown转换成HTML
+     * @param markdown
+     * @return
+     */
+    public static String markdownToHtmlExtensions(String markdown) {
+        //h标题生成id
+        Set<Extension> headingAnchorExtensions = Collections.singleton(HeadingAnchorExtension.create());
+        //转换table的HTML
+        List<Extension> tableExtension = Arrays.asList(TablesExtension.create());
+        Parser parser = Parser.builder()
+                .extensions(tableExtension)
+                .build();
+        Node document = parser.parse(markdown);
+        HtmlRenderer renderer = HtmlRenderer.builder()
+                .extensions(headingAnchorExtensions)
+                .extensions(tableExtension)
+                .attributeProviderFactory(new AttributeProviderFactory() {
+                    public AttributeProvider create(AttributeProviderContext context) {
+                        return new CustomAttributeProvider();
+                    }
+                })
+                .build();
+        return renderer.render(document);
+    }
+    /**
+     * 处理标签的属性
+     */
+    static class CustomAttributeProvider implements AttributeProvider {
+        @Override
+        public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
+            //改变a标签的target属性为_blank
+            if (node instanceof Link) {
+                attributes.put("target", "_blank");
+            }
+            if (node instanceof TableBlock) {
+                attributes.put("class", "ui celled table");
+            }
+        }
+    }
+    public static void main(String[] args) {
+        String table = "| hello | hi   | 哈哈哈   |\n" +
+                "| ----- | ---- | ----- |\n" +
+                "| 斯维尔多  | 士大夫  | f啊    |\n" +
+                "| 阿什顿发  | 非固定杆 | 撒阿什顿发 |\n" +
+                "\n";
+        String a = "[ONESTAR](http://122.51.28.187:8080/)";
+        System.out.println(markdownToHtmlExtensions(a));
+    }
+}
+```
+
+业务
+
+```java
+ @Override
+    public Blog markToHTML(Long id) {
+        Blog blog = blogMapper.queryBlogById(id);
+        String content = blog.getContent();
+//        转换
+        blog.setContent(MarkdownUtils.markdownToHtmlExtensions(content));
+        return blog;
+    }
+```
+
 
 
 ### 前端一些小细节
@@ -509,6 +771,7 @@ mybatis**模糊查询**
 复用代码设置
 
 ```html
+  <!--复用-->
 <nav class="ui inverted attached segment m-padded-tb-mini " th:fragment="nav">
     <div class="ui container">
         <div class="ui inverted secondary stackable menu">
@@ -535,6 +798,8 @@ mybatis**模糊查询**
 ```xhtml
 <div th:replace="~{/common/admin-common::nav(active='types')}"></div>
 ```
+
+
 
 
 
@@ -644,6 +909,14 @@ $('.ui.form').form({
           },
       }
     });
+```
+
+#### 时间显示设置
+
+数据库存储的时间精确到秒，前端不需要显示这么精确，只需要显示年月日
+
+```html
+<span th:text="${#dates.format(blog.updateTime,'yyyy-MM-dd')}"></span>
 ```
 
 

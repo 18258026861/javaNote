@@ -3344,7 +3344,6 @@ public class AsyncTestApplication {
 
 1. springcloud
 2. dubbo—zookeeper
-3. 
 
 
 
@@ -3407,7 +3406,8 @@ Remote Proceduce Call**远程过程调用**    。 是一种技术思想而非�
 - 智能负载均衡
 - 注册中心管理服务器，自动注册与发现
 - 运行流量调控，灰度发布
-- 
+
+  
 
 
 
@@ -3612,22 +3612,6 @@ class CustomerApplicationTests {
 ```properties
 dubbo.consumer.check=false
 ```
-
-
-
-# 10.blog
-
-
-
-## 需求分析
-
-### 用户
-
-
-
-- 
-
-
 
 
 
