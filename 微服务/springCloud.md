@@ -169,7 +169,9 @@
 
 创建实体类
 
-4.创建**提供者**子项目springcloud-provider-dept-8081
+### provider
+
+4.创建**提供者**子项目springcloud-provider-dept-8081，端口为8081
 
 引用父依赖
 
@@ -247,3 +249,73 @@ public class DeptController {
 可以通过接口获取数据
 
 ![1590073378765](springCloud.assets/1590073378765.png)
+
+### costomer
+
+6.创建消费者子项目springcloud-costomer-dept，端口为8082
+
+导入依赖
+
+7.创建config文件，将**RestTemplate纳入spring容器**
+
+```java
+@Configuration
+public class MyConfig {
+
+    /*RestTemplate放入spring容器*/
+    @Bean
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
+    }
+}
+```
+
+8.创建controller
+
+ RestTemplate的获取方法，当提供者的请求路径为@GetMapping时，调用get方法
+
+```java
+@RestController
+public class CostomerController {
+
+//    消费者不需要service层，直接调用rest接口‘’
+
+    @Autowired
+    private RestTemplate restTemplate;
+//    设置提供者的端口前缀
+    private static final String PROVIDER_URL = "http://localhost:8081";
+
+//    获得实体类
+    @RequestMapping("/id/{id}")
+    public Dept dept(@PathVariable("id") Long id){
+        /*调用提供者的接口，参数(没有就省略)，返回的类型*/
+        return restTemplate.getForObject(PROVIDER_URL+"/id/"+id,Dept.class);
+    }
+
+    @RequestMapping("/query")
+    public List<Dept> query(){
+        return restTemplate.getForObject(PROVIDER_URL+"/query",List.class);
+    }
+
+    @RequestMapping("/add")
+    public Dept add(Dept dept){
+        return restTemplate.postForObject(PROVIDER_URL+"/add",dept,Dept.class);
+    }
+}
+```
+
+![1590125683823](springCloud.assets/1590125683823.png)
+
+### 遇到的问题
+
+There is no getter for property named 'deptno' in 'class java.lang.Long'
+
+解决方法：1.将mybatis的mapper文件中参数改成#{_paramete}
+
+```xml
+<select id="queryById" resultType="Dept" parameterType="Long">
+        select * from dept where deptno = #{_paramete}
+    </select>
+```
+
+解决方法：2.后来发现将#{deptno}写成了${deptno}，改正即可
