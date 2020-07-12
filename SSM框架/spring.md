@@ -496,7 +496,8 @@ public class Config1 {
 
 # 5. 代理模式
 
-为什么要学习代理模式，因为这是SpringAOP的底层<br>
+为什么要学习代理模式，因为这是SpringAOP的底层
+
 是二十三种设计模式之一，***springAOC和springMVC必考***
 
 - 代理模式的分类   

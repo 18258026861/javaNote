@@ -487,85 +487,6 @@ ArrayList<类型> staff = new ArrayList<>();
 
 
 
-> 设置列表大小
-
-如果能估计出数组可能存储的数量,可以调用**ensureCapacity方法**
-
-```
-//当列表已存在,设置列表的大小,
-staff.ensureCapacity(23);
-
-```
-
-当列表不存在,**初始化时设置**
-
-```java
-ArrayList<String> staff = new ArrayList<>(22);
-```
-
-
-
-> 对元素的操作
-
-和数组不同,不能通过[]下标来访问和改变数组,而要使用**get和set方法**
-
-- get
-
-  - staff.get(1);等价于staff[1]
-  - 初始化**未赋值时使用会报错**
-
-- set
-
-  - staff.set(2,"yy");等价于staff[2]=  "yy"
-  - set只能替换**已存在的元素**
-
-- remove
-
-  - staff.remove(2)
-
-- add
-
-  - 使用add可以将**元素添加到数组列表末尾**
-
-    ```java
-    staff.add("yy");
-    //可以使用索引，第一个参数为索引，第二个为添加的值
-    staff.add(2,"yy");
-    ```
-
-    数组列表管理一个**内部的对象引用数组**.如果**调用add而内部数组已满**,就会**自动创建一个更大的数组,并拷贝到里面**
-
-
-
-插入和删除元素的**操作效率很低**,元素较多时,需要考虑链表
-
-
-
-```java
-//可以省略右边的类型参数
-        ArrayList<String> staff = new ArrayList<>(22);
-        int i = 0;
-        //赋值
-        while(i<22){
-            String x = "xx";
-            staff.add(x);
-            i++;
-        }
-        //新增元素
-        staff.add(0,"yy");
-        //替换
-        staff.set(15,"yy");
-        //移除
-        staff.remove(15);
-        //访问
-        staff.get(1);
-
-        //定义相同长度的数组
-        String[] s = new String[staff.size()];
-        //将数组列表的内容放入数组
-        staff.toArray(s);
-```
-
 
 
 ### 枚举
@@ -1611,6 +1532,224 @@ class Employee{
 
 
 
+## 内部类
+
+定义在一个类中的类
+
+> 为什么要使用
+
+- 内部类可以对同一包中的其他类**隐藏**
+- 可以**访问**这个类的作用域中的**数据**,包括**私有的**
+
+```java
+public class deepclone  {
+    private String name;
+
+    class plat{
+        String getName(){
+            return name;
+        }
+    }
+}
+```
+
+
+
+### 外围类
+
+内部类的对象总有一个隐式引用,指向它的外部对象
+
+<img src="JavaSE.assets/image-20200625153339789.png" alt="image-20200625153339789" style="zoom:25%;" />
+
+**外围类的引用在构造器中设置**．编译器会修改内部类构造，添加外围引用的参数
+
+```java
+public class deepclone  {
+
+    private String name = "yzy";
+
+    class plat{
+        String name = "yy";
+
+         String getName(){
+            return name;
+        }
+        //可以访问外部类的私有字段,OutClass.this 访问
+        void setName(){
+            deepclone.this.name = name;
+        }
+
+        plat(String name){
+            deepclone.this.name = name;
+        }
+    }
+}
+```
+
+外部类引用可以用**外部类名.this**
+
+>  实现内部类实例
+
+成员内部类是**依附**外部类而存在的，也就是说，如果要创建成员内部类的对象，**前提**是必须**存在一个外部类的对象**
+
+```java
+       //外围类的实例
+        deepclone d = new deepclone();
+        //1.内部类实例,需要为外部类实例来new,OutClass.innerClass代表内部类
+        deepclone.plat plat = d.new plat("yy");
+
+		//2.外部类创建一个返回内部类的方法,外部类对象调用方法
+		public plat getPlat(){
+            
+        return new plat();
+            
+    	}
+
+		deepclone.plat plat1 = d.getPlat();
+```
+
+
+
+> 注意点
+
+- **不能拥有static**的字段和方法
+- 内部类的权限更加强大,可以**访问外围类的私有数据**,但是外围类则不行,**如果要访问**,就要**创建内部类实例**
+
+
+
+## 局部类
+
+在一个方法中局部定义一个类
+
+```java
+	void add(){
+            class time{
+                String getName(){
+                    return plat.this.name;
+                }
+            }
+        }
+```
+
+- 局部类**不能有访问修饰符**
+- 对外部世界完全隐藏
+- 权限大,可以访问外部类字段
+- 可以访问方法里的**局部变量**,必须是final
+
+> 实现内部类
+
+```java
+ 	void add(){
+            class time{
+                String getName(){
+                    System.out.println(plat.this.name);
+                    return plat.this.name;
+                }
+            }
+        //方法内创建实例并调用方法
+            time t = new time();
+            t.getName();
+        }
+
+//	调用方法
+	plat.add();
+```
+
+局部类的后面,方法里面直接实例化并调用,当外部类调用后会直接执行内部类方法
+
+```
+deepclone d = new deepclone();
+plat.add();
+```
+
+
+
+> 注意点
+
+- 类中的所有静态字段都必须是**final**，并初始化为一个编译时常量
+
+- 类**不能有static方法**，如果有，也只能访问外围类的静态字段和静态方法
+
+
+
+## 匿名内部类
+
+在局部内部类的基础上,只创建类的对象,不需要类名
+
+> 什么时候使用
+
+- 只用到类的一个实例
+
+- 类在定义后马上用到
+
+- 类很小
+
+  
+
+
+
+> 写法
+
+1.想要**实现一个接口**,不用特意写一个类去的实现,看似是实例化,其实是使用匿名实现
+
+```java
+interface Print{
+        void print(String s);
+        default void show(){
+            System.out.println("yy");
+        }
+    }
+
+
+Print print = new Print() {
+            @Override
+            public void print(String s) {
+                System.out.println(s);
+            }
+        };
+
+        print.print("yy");
+```
+
+
+
+> 注意点
+
+- 构造器的名字必须与类名相同，所以匿名内部类**没有构造器**，构造参数传递给超类构造器
+
+
+
+
+
+## 静态内部类
+
+只是为了把一个类隐藏在类的内部，**不需要外围类的引用**．可以将内部类声明为**static**，可以直接调用
+
+```java
+public class deepclone  {
+	static class n{
+        public void get(){
+            System.out.println("获取内部类");
+        }
+    } 
+   }
+   
+   
+    deepclone.n n = new deepclone.n();
+        n.get();
+```
+
+可以直接使用**outer.inner**　类创建实例
+
+
+
+> 注意点
+
+- 当内部类不需要引用外部类时（常规内部类），就应该使用静态内部类，即加上static
+- 不引用外部类即**不能访问外部类字段**
+- 相比于常规内部类，可以有静态字段和方法
+- 在**接口**中的内部类**自动static和final**
+
 
 
 # 继承
@@ -1790,7 +1929,7 @@ Employee e = new Manager();
 
 位于上层的类更具有**一般性**,适合作为抽象类
 
-使用==关键字abstract==,可以将一个类或者方法定义为抽象,抽象的方法**不需要实现**;
+使用==关键字abstract==,可以将一个类或者方法定义为抽象,抽象的方法**不实现**;
 
 - 包含抽象方法的类**必须抽象**
 - 抽象类可以**不含抽象方法**
@@ -2007,157 +2146,6 @@ x.action();
 
 
 
-# 反射
-
-能够**分析类能力**的程序
-
-- 在运行时分析类的能力
-- 运行时检查对象
-- 实现泛型数组操作代码
-- 利用Method对象
-
-
-
-## class类
-
-程序运行期间,Java为所有对象维护一个**运行时类型标识**.这个信息会**跟踪每个对象的类**,**虚拟机**通过这些信息去**执行类里方法**.(因为对象是类的实例,当对象调用方法,虚拟机就会通过信息追踪到类里去调用方法)
-
-**虚拟机为每个类型管理唯一的Class对象**，因此可以使用＝＝
-
-
-
-特殊的Java类访问这些信息--**Class类**,信息保存在这个类里.
-
-### 三种获取方式
-
-> getClass
-
-返回一个**Class类型的实例**.
-
-getClass().**getName()**:获取类名
-
-```java
-		Employee e = new Employee();
-        Class c = e.getClass();
-        String name = e.getClass().getName();
-        System.out.println("类名:"+name);
-        System.out.println("Class实例:"+c);
-```
-
-![image-20200623135225117](JavaSE.assets/image-20200623135225117.png)
-
-如果类在一个包里,包也会作为类名的一部分
-
-> 　forName
-
-通过类名(加上包名)**获取Class**
-
-```
-        Class l = Class.forName("com.example.blog.Employee");
-```
-
-![image-20200623140415363](JavaSE.assets/image-20200623140415363.png)
-
-> T.class
-
-```
-System.out.println(Employee.class);
-```
-
-
-
-### 通过反射构造实例
-
-通过**getConstructor**()**获取一个Constructor（构造器）类型的对象**，再通过**newInstance**方法**构造实例**
-
-```java
-			Class cl = Class.forName("com.example.blog.Employee");
-			Object o = cl.getConstructor().newInstance();
-            System.out.println(o);
-```
-
-
-
-### 通过反射分析类的结构
-
-java.lang.reflect包中有三个类
-
-- **Field**:描述类的字段
-  - **getName**:返回字段
-  - **getType**:返回**字段类型**的一个对象,类型为Class
-  - **getModifiers**:返回整数,用不同的0/1描述使用的**修饰符**.用Modifier类的**getModifiers分析**这个整数
-  - **getFields**:返回这个类**支持**的字段的数组(包括超类的公共成员)
-  - **getDeclareFileds** :返回类中**声明**的全部字段(包括私有成员,包成员,受保护成员,不包括超类成员)
-- **Method**:类的方法
-  - getName:返回方法
-  - getModifiers
-  - **getMothods**:返回这个类支持的方法的数组
-  - **getDeclareMethods** :返回类中声明的全部字段
-- **Constructor**:类的构造器
-  - getName:返回构造器
-  - getModifiers
-  - **getConstructors**:返回这个类支持的构造器的数组
-  - **getDeclareConstructors** :返回类中声明的全部字段
-
-```java
-		String name = "Employee";
-
-        //获取类对应的class
-        Class cl = Class.forName(name);
-
-        //获取超类
-        Class supercl = cl.getSuperclass();
-        //分析类的修饰符
-        String modifiers = Modifier.toString(cl.getModifiers());  //public
-        if (modifiers!=null){
-            System.out.print(modifiers+" ");
-        }
-        System.out.println("class "+ name);
-        if(supercl!=null){
-            System.out.println(" extends "+ supercl);
-        }
-```
-
-![image-20200623154400608](JavaSE.assets/image-20200623154400608.png)
-
-通过上述的方法输出类的结构
-
-
-
-### 编写泛型数组
-
-
-
-
-
-# 异常
-
-当运行发生错误，程序会抛出一个异常．**抛出异常比终止程序灵活**，因为可以提供*处理器***捕获**异常并**处理**．没有提供处理器就会终止程序，打印异常
-
-
-
-> 类型
-
-- 非检查型
-  - 不期望用户能为这些异常提供处理器,应避免发生而不是去解决
-  - 如越界错误和访问null
-- 检查型
-  - 检查用户是否知道异常并做好准备来处理后果
-
-如果**方法可能**包含会抛出检查型**异常的语句**,则在方法名后面**增加throw子句**
-
-```java
-public void add() throws Exception{
-        a++;
-    }
-```
-
-调用该方法的**任何方法也要增加throw子句**(main方法也要)
-
-```
-public static void main(String[] args) throws Exception {
-```
-
 
 
 # 接口
@@ -2189,7 +2177,7 @@ public interface CommentService {
 
 
 
-**关键字implements**表名类实现某个接口,**必须实现接口中的所有方法**
+**关键字implements**表名类实现某个接口,**必须实现接口中的所有方法**,void类型可以为空
 
 ```java
 public class CommentServiceImpl implements CommentService {
@@ -2211,7 +2199,22 @@ public class CommentServiceImpl implements CommentService {
 
 ## 属性
 
-不能用new 构造接口的实例化
+**不能**用new 构造**接口的实例化**,但是**匿名内部类**可以实现.即创建一个匿名的类实现接口,然后实例化这个接口,再将其来信
+
+```
+interface Print{
+        void print(String s);
+    }
+    
+    
+    //匿名内部类实例化
+        Print print = new Print() {
+            @Override
+            public void print(String s) {
+                System.out.println(s);
+            }
+        };
+```
 
 可以**声明接口类型**的变量,**引用实现接口的类**
 
@@ -2230,9 +2233,1752 @@ CommentService comment = new CommentServiceImpl();
 
 ![image-20200623164617421](JavaSE.assets/image-20200623164617421.png)
 
-> 接口层次
+### 接口层次
 
-类似继承层次
+类似继承层次,**接口也可以扩展接口**,**子接口默认继承**父接口的所有方法,不用写出.类实现子接口需要实现父子接口的所有方法
+
+接口可以**包含常量**,有些接口**只定义了常量,没有定义方法.**子接口会**继承所有常量**
+
+接口中的字段自动被设置成public static final
+
+==多实现==:可以实现多个接口
+
+
+
+### 抽象类和接口的区别
+
+1.抽象类只能**继承一个类**,而接口可以**实现多个**
+
+2.抽象类有实例变量,接口只有类变量
+
+
+
+###　默认方法
+
+> 背景
+
+Java8以前,功能不断添加,就会**修改接口,实现类也要改变**,非常繁琐
+
+所以在接口中增加了默认方法,实现类就可以不修改也不报错,**默认使用接口中的方法**,也可以**实现方法用于重写**
+
+
+
+可以为**接口**提供一个默认实现．必须用**default修饰符,必须有大括号**
+
+```java
+interface Print{
+        void print(String s);
+        
+        default void show(){
+            System.out.println("yy");
+        }
+    }
+```
+
+**实现类**
+
+```java
+class tt implements deepclone.Print{
+
+    @Override
+    public void print(String s) {
+    }
+
+    public static void main(String[] args) {
+        tt t = new tt();
+        t.show();
+    }
+}
+```
+
+如果实现类没有重写默认方法,就是用接口中的默认方法,重写了就调用自己写的方法
+
+
+
+> 默认方法冲突
+
+一个接口中有一个默认方法，在超类或另一个接口中定义相同的方法．
+
+１.**超类优先**，与超类中的方法同名且有相同参数的默认方法会被忽略
+
+２.**接口冲突**．一个接口提供了默认方法，另一个接口提供了同名同参数的方法（不管是否是默认方法），必须覆盖这个方法解决问题．
+
+```java
+interface Person{
+	defalut String getName(){
+	 return "";
+	}
+}
+
+interface Named{
+	default String getName(){
+	return getClass().getName;
+	}
+}
+```
+
+上面两个接口有名字和参数相同的默认方法getName（）；
+
+```
+class Student inplements Person,Named{
+	...
+}
+```
+
+**解决方法**：在Student类中制定那个接口的方法
+
+```java
+class Student inplements Person,Named{
+	public String getName(){
+		return Person.super.getName();
+	}
+}
+```
+
+
+
+### 对象克隆
+
+Cloneable接口,**提供一个安全的clone方法**
+
+> 克隆与拷贝
+
+1.**copy**:前面了解的创建对象**副本是引用相同的地址**,即对任意一个操作对两者都有影响.
+
+**2.clone**:希望副本是一个**新对象**,初始状态相同,但是互不影响.
+
+- clone**默认是浅拷贝**:新对象的**元素**如果是**对象**,引用的还是**原来的地址**
+- 想要**实现深拷贝,需要重写**:新对象的元素如果是对象,**创建新对象**.
+
+<img src="JavaSE.assets/image-20200624134351191.png" alt="image-20200624134351191" style="zoom: 25%;" />
+
+实现拷贝(无论深浅)的两个**条件**
+
+- 实现Cloneable接口
+  - 讲道理clone是从Object中继承过来,应该不用实现接口,只是用做一个标记,**标志我重写了clone方法**
+  - 但是对象
+- 重写clone方法,并用public修饰
+
+
+
+#### 浅拷贝
+
+**浅拷贝也要实现Cloneable接口**,将方法定义为public,再调用super.clone()
+
+```java
+public class Employee extends Person implements Cloneable{
+    public Employee clone() throws CloneNotSupportedException {
+        return (Employee)super.clone();
+    }
+}
+```
+
+
+
+#### 深拷贝
+
+写在需要调用拷贝的类中
+
+```java
+public class Employee extends Person implements Cloneable{
+    private Manager manager;
+
+    public Employee clone() throws CloneNotSupportedException {
+        // 对象拷贝
+        Employee cloned = (Employee) super.clone();
+        // 类里的对象字段拷贝
+        cloned.manager = (Manager) manager.clone();
+
+        return cloned;
+    }
+```
+
+
+
+# 异常,断言,日志
+
+
+
+## 异常
+
+当运行发生错误，程序会抛出一个异常．**抛出异常比终止程序灵活**，因为可以提供*处理器***捕获**异常并**处理**．没有提供处理器就会终止程序，打印异常
+
+
+
+> 类型
+
+- 非检查型
+  - 不期望用户能为这些异常提供处理器,应避免发生而不是去解决
+  - **Error和RuntimeException**
+- 检查型
+  - 检查用户是否知道异常并做好准备来处理后果
+
+
+
+> 声明
+
+
+
+### 分类
+
+所有的一场都是继承Throwable,下一层分为两个分支
+
+<img src="JavaSE.assets/image-20200626150021134.png" alt="image-20200626150021134" style="zoom:25%;" />
+
+#### Error
+
+描述**Java运行时系统的内部错误和资源耗尽错误**.程序不应该抛出这种类型的错误.
+
+如果出了这种错误,除了终止无法解决.
+
+
+
+#### Exception
+
+设计着重关注这方面,
+
+- **RuntimeException**:由**编译错误**导致的异常
+  - 错误的强制类型转换
+  - 数组访问越界
+  - null指针
+- **其他类型**:程序本身没有问题,其他I/O等导致的异常
+  - 视图超越文件末尾继续读取数据
+  - 试图打开一个不存在的文件
+  - 查找Class对象不存在
+
+
+
+###　声明异常
+
+１.方法首部的异常规范，声明方法可能抛出的异常
+
+在方法名后面**增加throw子句**
+
+```java
+public void add() throws Exception{
+        a++;
+    }
+```
+
+调用该方法的**任何方法也要增加throw子句**(main方法也要)
+
+```
+public static void main(String[] args) throws Exception {
+```
+
+
+
+２.**必须声明所有异常**，在首部列出所有异常，用，隔开
+
+```java
+public void add() throws IndexOutOfBoundsException,IllegalAccessException{
+```
+
+
+
+3.**不需要声明**Error和非检查型异常
+
+
+
+### 抛出异常
+
+以EOFException为例
+
+```java
+public void read() throws EOFException{
+            int a = 1;
+            String name = "error message";
+            if(a>2){
+                throw new EOFException(name);
+            }
+        }
+```
+
+
+
+### 创建异常类
+
+定义一个派生Exception的类或者派生Exception的子类
+
+包含两个构造器
+
+- 默认构造器
+- 包含详细描述信息的构造器(超类Throwable的toString会返回这个详细信息,在调试中非常有用)
+
+```java
+class outputerException extends Exception{
+        public outputerException(){
+            
+        }
+        public outputerException(String message){
+            super(message);
+        }
+    }
+```
+
+抛出异常
+
+```java
+ class n{
+        public void get(){
+
+            System.out.println("获取内部类");
+        }
+        public void read() throws outputerException{
+            int a = 1;
+            String name = "error message";
+            if(a>2){
+                throw new outputerException(name);
+            }
+        }
+    }
+```
+
+
+
+### 抛出异常
+
+####　**处理**知道如何处理的异常
+
+设置**try/catch语句块**
+
+```java
+		void add() {
+                   try {
+                        执行语句
+                    }catch (ExceptionType1 e){
+                        e.printStackTrace();
+                    }catch (ExceptionType2 e){
+                        e.printStackTrace();
+                    }
+                }
+```
+
+> 流程
+
+- 抛出异常
+  - 1.如果任何代码抛出了一场,将**跳过try中其余代码**
+  - 2.程序根据**异常类型**选择对应的catch语句
+  - 3.抛出catch子句中**没有的异常**,会立刻退出.
+- 没有抛出异常
+  - 跳过catch子句
+
+
+
+catch**获取更多信息**可以使用**e.getMessage()**,异常对象的**实际类型**：**e.getClass()).getName()**
+
+
+
+
+
+
+
+#### **传播**不知道怎么处理的异常
+
+只在方法名后**声明异常**,提醒可能出现的异常
+
+```java
+		void add() throws Exception{
+                    执行语句
+                }
+```
+
+> 注意点
+
+当编写的子类方法覆盖超类的方法，子类方法**不允许抛出超类方法未声明的异常**，可以抛出少于超类方法的异常
+
+```java
+        void print(String s) throws EOFException, FilerException;
+        
+        
+        @Override
+            public void print(String s) throws FilerException {
+                System.out.println(s);
+            }
+```
+
+
+
+#### finaly 子句
+
+如果在抛出异常后，想要处理已经获取的资源，其中一种解决方法是**捕获所有异常，完成对资源的清理，但是比较繁琐**．第二种就是finall子句
+
+**不管异常是否被捕获，finaly子句都会执行．**
+
+```java
+void add() throws Exception{
+                    int i=1;
+                    try {
+                    i += 1;
+                    i = 1/0;
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }finally {
+                        System.out.println(i);
+                    }
+    				System.out.println("没有异常");
+                }
+```
+
+> 流程
+
+- **没有抛出异常**：（假设i = 1/0正常）
+  - １．执行完try的所有代码，
+  - ２.执行finally的所有代码．
+  - 3. 执行try/catch下面的其他语句,System.out.println("没有异常");
+
+- **抛出异常并被捕获**：
+  - １.try子句中执行到异常语句（i = 1/0）
+  - ２.跳转到捕获异常的catch子句并执行代码 
+  - 3.跳转到finally子句执行代码
+  - 4.抛回到调用者手里
+- **抛出异常但是没有捕获**：
+  - １.try子句中执行到异常语句（i = 1/0）
+  - 2.跳转到finally子句,执行代码
+  - 3.抛回异常到调用者手里
+
+
+
+> 注意点
+
+- 如果try子句中出现return语句,也会执行finally子句.
+  - 将结果保存在一个**临时栈**中，接着执行完finally中的语句，最后才会从临时栈中取出之前的结果返回。
+  - finally中的代码对临时栈中的数据没有影响,除了return覆盖
+
+- **如果finally子句中也有return,会覆盖try中的return**
+
+- finally子句主要用于**清理资源**,不要增加改变控制流的语句(return,throw,break,continue);
+
+
+
+> 例题
+
+```java
+public class test {
+	public int add(int a,int b) {
+		try {
+			return a+b;
+		}catch(Exception e){
+			System.out.println("catch语句块");
+		}finally {
+			System.out.println("finally语句块");
+		}
+		return 0;
+	}
+	public static void main(String[] args) {
+		test t=new test();
+		System.out.println("和是"+t.add(9, 34));
+	}
+}
+```
+
+输出的结果:
+
+![image-20200627164645036](JavaSE.assets/image-20200627164645036.png)
+
+try中return将结果保存在一个**临时栈**中，接着执行完finally中的语句，最后才会从临时栈中取出之前的结果返回。
+
+
+
+> resources
+
+```
+try (var in = new Scanner("")){
+            while(in.hasNext()){
+                System.out.println();
+            }
+        }
+```
+
+try退出时(执行完或抛出异常),会自动调用close方法
+
+
+
+### 使用异常的技巧
+
+1.异常处理不能代替简单的测试,只有在一场情况下使用
+
+isEmpty方法的时间**远小于**捕获异常的时间
+
+2.不要过分细化异常,一句一个try/catch
+
+3.不要压制异常
+
+4.不要羞于传递异常
+
+
+
+## 断言
+
+具有自我保护能力的程序中经常使用断言.
+
+断言机制允许在**测试期间**向代码**插入一些检查**,而在生产代码中会自动删除.
+
+启用或禁用断言是**类加载器的功能**.禁用时会删除断言代码.**不会降低程序运行速度**
+
+==关键字assert==
+
+- assert 条件;
+  - 计算条件,抛出异常
+- assert 条件:表达式(唯一作用是产生一个消息字符串)
+  - 表达式AssertionError对象的构造器,转换成一个消息字符串
+
+
+
+> 打开断言
+
+在idea中,VM opeation中输入-ea即可打开
+
+
+
+<img src="JavaSE.assets/image-20200630095705410.png" alt="image-20200630095705410" style="zoom:50%;" />
+
+
+
+> 表达式
+
+1、assert <boolean表达式>
+
+```
+//断言x是个非负数
+assert a >= 0;
+```
+
+
+
+2、assert <boolean表达式> : <错误信息表达式>
+
+```
+//判断并将a的值传递给AssertionError对象
+assert a>=0:a;
+```
+
+
+
+断言失败是**致命的错误**,因此不应该向其他部分通知错误,只用于**测试阶段**.用于**自我检查**
+
+约定前置条件,不满足则断言失败.
+
+
+
+## 日志
+
+> 优点:
+
+- 可以**轻易的打开和关闭**所有日志记录
+- 日志代码**开销很小**
+- 可以进行**过滤**
+- 采用**多种方式**,如XML,纯文本
+- 可以拥有**多个**日志记录器
+- 由**配置文件控制**
+
+
+
+### 基本日志
+
+1.全局日志记录器
+
+```
+//全局日志输出info级别的信息:log1
+Logger.getGlobal().info("log1");
+```
+
+![image-20200630101327993](JavaSE.assets/image-20200630101327993.png)
+
+2.关闭所有日志
+
+```
+       //关闭全局日志
+       Logger.getGlobal().setLevel(Level.OFF);
+```
+
+
+
+### 高级日志
+
+**自定义日志记录器**
+
+```java
+/*自定义记录器名层次
+    *      层次性相比于包更强,子包会继承父包的日志级别
+    * */
+    private static final Logger logger = Logger.getLogger("com.example.log");
+```
+
+
+
+> 七个日志级别
+
+- SEVERE
+- WARNING
+- INFO
+- CONFIG
+- FINE
+- FINER
+- FINEST
+
+默认情况只记录前三个级别,高级别记录对用户意义不大的调试信息.
+
+**设置日志级别**,
+
+```java
+//开启所有级别
+logger.setLevel(Level.ALL);
+
+//关闭所有级别
+logger.setLevel(Level.OFF);
+```
+
+**使用log方法并指定级别**
+
+```
+	logger.log(Level.FINE,"fff");
+```
+
+
+
+### 配置文件
+
+jdk/jre/lib/logging.properties
+
+![image-20200630104420963](JavaSE.assets/image-20200630104420963.png)
+
+> 修改日志级别
+
+- **全局日志级别**
+
+  .level = 日志级别
+
+- **自定义日志记录器**的日志级别
+
+  记录器名.level = 日志级别
+
+
+
+> 设置处理器级别
+
+显示FINEST**及之前**的所有记录
+
+```
+java.util.logging.ConsoleHandler.level = FINEST
+```
+
+![image-20200630105515959](JavaSE.assets/image-20200630105515959.png)
+
+
+
+### 处理器
+
+日志记录器将记录发送到**父处理器**,最终发送到祖先处理器(名为"")的**ConsoleHandler**.
+
+处理器也有日志级别,设置如上.
+
+```java
+//不使用父类处理器
+        logger.setUseParentHandlers(false);
+        //创建自定义处理器
+        Handler handler = new ConsoleHandler();
+        //设置处理器级别
+        handler.setLevel(Level.FINE);
+        //装上处理器
+        logger.addHandler(handler);
+```
+
+
+
+### 日志文件
+
+- FileHandler
+
+  - 保存到文件
+
+  ```java
+  try {
+              FileHandler file = new FileHandler();
+              logger.addHandler(file);
+          } catch (IOException e) {	
+              e.printStackTrace();
+          }
+  ```
+
+  
+
+- SocketHandler
+
+  - 保存到指定主机和端口
+
+
+
+> append
+
+如果多个应用程序使用一个日志文件,开启append,在文件名模式中使用%u
+
+
+
+### 过滤器
+
+默认情况下根据日志记录级别进行过滤.
+
+**同一时刻只能有一个过滤器**
+
+```java
+//创建实现Filter接口的实现类
+class filte implements Filter{
+
+    @Override
+    public boolean isLoggable(LogRecord record) {
+        System.out.println(record.getMessage());
+        return true;
+    }
+}
+
+//安装过滤器
+logger.setFilter(filte);
+```
+
+
+
+## 调试
+
+> 打印
+
+System.out.println输出数值
+
+Logger.getGlobal().info()日志打印数值
+
+> 单元测试
+
+ｊｕｎｉｔ或者在每个类中设置ｍａｉｎ方法
+
+> 输出异常
+
+e.printStackTrace方法输出异常
+
+
+
+#  泛型
+
+
+
+## 泛型数组
+
+解决数组大小固定的问题
+
+==ArrayList类==,类似于数组,但是**在添加或删除元素时,能够自动调整数组容量**
+
+```
+//右边引用的类型可以省略
+ArrayList<类型> staff = new ArrayList<>();
+```
+
+
+
+> 设置列表大小
+
+如果能估计出数组可能存储的数量,可以调用**ensureCapacity方法**
+
+```
+//当列表已存在,设置列表的大小,
+staff.ensureCapacity(23);
+```
+
+当列表不存在,**初始化时设置**
+
+```java
+ArrayList<String> staff = new ArrayList<>(22);
+```
+
+
+
+> 对元素的操作
+
+和数组不同,不能通过[]下标来访问和改变数组,而要使用**get和set方法**
+
+- get
+
+  - staff.get(1);等价于staff[1]
+  - 初始化**未赋值时使用会报错**
+
+- set
+
+  - staff.set(2,"yy");等价于staff[2]=  "yy"
+  - set只能替换**已存在的元素**
+
+- remove
+
+  - staff.remove(2)
+
+- add
+
+  - 使用add可以将**元素添加到数组列表末尾**
+
+    ```java
+    staff.add("yy");
+    //可以使用索引，第一个参数为索引，第二个为添加的值
+    staff.add(2,"yy");
+    ```
+
+    数组列表管理一个**内部的对象引用数组**.如果**调用add而内部数组已满**,就会**自动创建一个更大的数组,并拷贝到里面**
+
+
+
+插入和删除元素的**操作效率很低**,元素较多时,需要考虑链表
+
+```java
+//可以省略右边的类型参数
+        ArrayList<String> staff = new ArrayList<>(22);
+        int i = 0;
+        //赋值
+        while(i<22){
+            String x = "xx";
+            staff.add(x);
+            i++;
+        }
+        //新增元素
+        staff.add(0,"yy");
+        //替换
+        staff.set(15,"yy");
+        //移除
+        staff.remove(15);
+        //访问
+        staff.get(1);
+
+        //定义相同长度的数组
+        String[] s = new String[staff.size()];
+        //将数组列表的内容放入数组
+        staff.toArray(s);
+```
+
+
+
+## 通配符
+
+泛型中只能放入符合类型的参数,如果是
+
+> 错误例子
+
+有这么一个方法,能够遍历输出传入的泛型数组
+
+```
+public  void print(List<Employee> pair){
+        int value = 0;
+        for(Employee e : pair){
+            System.out.println(e);
+        }
+    }
+```
+
+调用传参出错
+
+![image-20200702120655742](JavaSE.assets/image-20200702120655742.png)
+
+
+
+> 正确例子
+
+```
+public  void print(List<? extends Employee> pair){
+        int value = 0;
+        for(Employee e : pair){
+            System.out.println(e);
+        }
+    }
+```
+
+不报错![image-20200702121223390](JavaSE.assets/image-20200702121223390.png)
+
+
+
+### 无限定通配符
+
+有一个类:pair<?> 里两个方法
+
+- ? getName();
+  - **返回结果只能赋给Object.**
+- void setName();
+  - Object对象可以调用该方法
+
+
+
+```
+
+```
+
+
+
+不能在编写代码中用于表示类型,如
+
+```
+? play = p.getFist();
+```
+
+
+
+> 作用
+
+操作简单,不需要实际类型
+
+
+
+
+
+## 泛型类
+
+拥有一个或多个类型变量的类
+
+> 定义一个泛型类
+
+引入类型变量T,用<>尖括号,放在类名后面,用于**方法的返回类型和字段的类型**
+
+```java
+public class pair<T,U> {
+    private T t1;
+    private U u1;
+    
+    public pair(){
+        
+    }
+    public pair(T t1,U u1){
+        this.t1 = t1;
+        this.u1 = u1;
+    }
+    
+    public T getT1(){
+        return t1;
+    }
+    public U getU1(){
+        return u1;
+    }
+    public void setT1(T t1){
+        this.t1 = t1;
+    }
+    public void setU1(U u1){
+        this.u1 = u1;
+    }
+}
+```
+
+如上,所有需要类型的地方全部用T和U代替.
+
+当实例化时,就能直接用**具体类型代替**.T = String  ,U = Integer   ,**不能用基本数据类型**
+
+```java
+pair<String,Integer> p = new pair<>();
+```
+
+## 返回泛型类的方法
+
+当方法引用该泛型类
+
+```java
+public pair<Integer> minmax(int[] ints){
+        int min = ints[0];
+        int max = ints[0];
+        for(int i : ints){
+            if(min>i)
+                min = i;
+            if(max<i)
+                min = i;
+        }
+        return new pair<>(min,max);
+    }
+```
+
+方法中需要指定泛型参数
+
+```java
+        int[] p = {5,8,34,0,2};
+        pair<Integer> m = new pair<>();
+        pair<Integer> n = m.minmax(p);
+        System.out.println("min:" +n.getT1());
+        System.out.println("max:" +n.getU1());
+```
+
+<img src="JavaSE.assets/image-20200630165842042.png" alt="image-20200630165842042"  />
+
+##　泛型方法
+
+方法中的**泛型声明<T>**这是一个泛型方法
+
+- **只有泛型声明的方法才是泛型方法**,泛型类中的方法并不是泛型方法
+
+- 只有泛型方法才可以**使用泛型类型T**
+
+```java
+public static <T> void getMiddle(T[] ints){
+    T sum = null;
+    for(T i : ints){
+        System.out.print(i);
+    }
+}
+```
+
+实现: 静态类
+
+```java
+//调用静态类
+pair.<String>getMiddle(pp); 
+//省略类型参数,通过参数判断类型
+pair.getMiddle(pp);
+```
+
+泛型可以**继承类和实现接口**(继承和接口都使用extends)用于调用方法,
+
+限制T是只能实现Comparable接口的类,T是限定类型的字类型选择extends更接近子类型这个概念.
+
+```java
+public static <T,U extends Comparator& Serializable> void getMiddle(T[] ints){
+        T sum = null;
+        U um = null;
+        for(T i : ints){
+            System.out.print(i);
+        }
+    }
+```
+
+**限定类型**用&份额,**类型变量**用,分隔
+
+
+
+## 虚拟机泛型
+
+虚拟机中没有泛型类型对象,所有对象都是普通类.那么虚拟机怎么接收并执行泛型类呢?
+
+### 类型擦除
+
+编译器会擦除类型参数,转换成普通类提供给虚拟机
+
+**原始类型**:
+
+- 原始类型名为去掉类型参数后的泛型名
+- 将类型的限定类转移到原始类型上,无限定类就替换成Object(不显示)
+  - 由于只能**单继承**,所以只会选择第一个限定类继承
+
+```java
+public class pair<T extends Comparator> {
+
+    public pair<Integer> minmax(Integer[] ints){
+    }
+
+    public static <T> void ss(T[] ints){
+    }
+    }
+```
+
+擦除后
+
+```java
+public class pair extends Comparator {
+
+    public pair minmax(Integer[] ints){
+    }
+
+    public static void ss(T[] ints){
+    }
+    }
+```
+
+如果有多个类型不同pair,如pair<String> ,pair<LocalDate> 擦除后都会变成原始的pair类型
+
+
+
+## 泛型的局限
+
+- **不能用基本类型**,用包装类取代
+
+  - 本质原因就是类型擦除.**原始类型为Object**.而Object不是基本类型的父类
+
+  ```java
+  //错误
+  pair<int>   
+  //使用包装类
+  pair<Integer>
+  ```
+
+  
+
+- 不能判断类型和强制类型转换
+
+  - 原因还是类型擦除,原始类型为Object, 是所有类的父类
+
+  ```java
+  //会报错   instanceof(用来测试一个对象是否为一个类的实例,直接或间接子类,或是接口的实现类)
+  a instanceof pair<T>
+  pair<String> a = (pair<String>)b
+  ```
+
+
+- 不能创建参数化类型的数组
+
+  ```
+  var t = new pair<String>[10];
+  ```
+
+
+
+- 不能实例化类型变量T
+
+  ```
+  first = new T();
+  ```
+
+  - 类型擦除之后变成new Object(),这个类型没有意义
+
+
+
+- 不能构造泛型数组
+
+  ```
+  T[] m = new T[2];
+  ```
+
+  
+
+- 泛型类中的静态的泛型类的变量无效
+
+  ```
+  private static T single;
+  
+  private static T getSingle(){
+  	return single;
+  }
+  ```
+
+  
+
+- 类型的继承关系对泛型类不起作用
+
+  - Manager是Employee的子类,但是pair<Manager> 和 pair<Employee>没有任何关系
+
+
+
+
+
+
+
+# 集合
+
+```java
+public interface Collection<E> extends Iterable<E> { 
+    // 添加元素,集合中不允许有重复的元素,添加成功返回true,否则false
+		boolean add(E e);
+    // 	返回迭代器对象用于访问集合中的元素
+		Iterator<E> iterator();	
+}
+```
+
+==集合类的基本接口是Collection==
+
+
+
+## 分离
+
+java集合类库将**接口**与**实现**分离,达到**多态**的目的
+
+> 举例
+
+队列接口可以在尾部添加元素,头部删除元素."**先进先出原则**"
+
+**接口**
+
+```
+interface Queue<E>{
+    void add(E e);
+    E remove();
+    int size();
+}
+```
+
+**实现类**
+
+- 循环数组-CircularArrayQueue
+  - 比链表更高效,多数人选择.
+  - 有界集合,容量有限
+- 链表-LinkedListQueue
+
+```
+//一个队列接口的实现类
+class CircularArrayQueue<E> implements Queue<E>{
+    //队列头部
+    private int head;
+    //队列尾部
+    private int tail;
+    
+    @Override
+    public void add(E e) {}
+
+    @Override
+    public E remove() {return null;}
+
+    @Override
+    public int size() { return 0;}
+}
+//另一个队列的实现类
+class LinkedListQueue<E> implements Queue<E>{
+    //队列头部
+    private int head;
+    //队列尾部
+    private int tail;
+
+    @Override
+    public void add(E e) {}
+
+    @Override
+    public E remove() {return null; }
+
+    @Override
+    public int size() { return 0; }
+}
+```
+
+**构建集合对象**
+
+```
+    //左边可以使用接口类型存放集合引用,右边构造集合对象是才会使用具体的类  
+        Queue<Manager> managerQueue = new CircularArrayQueue<>();
+        managerQueue.add(new Manager());
+```
+
+当你**想要改变时**,不需要重写代码,只需要把第一行使用的**具体类改成另一个具体类**
+
+```
+        Queue<Manager> managerQueue = new LinkedListQueue<>();
+        managerQueue.add(new Manager());
+```
+
+
+
+## 迭代器
+
+四个方法
+
+- hasNext()
+- next
+- remove
+- forEachRemaining
+
+```java
+//迭代器接口
+public interface Iterator<E> {
+    //判断是否在末尾,当还有元素就返回true
+    boolean hasNext();
+    // 反复调用该方法,逐个访问每个元素.
+    //到达末尾,抛出异常NoSuchElementException,因此调用该方法之前都要调用hasNext()方法
+    E next();
+    
+    // 删除迭代器上次调用next方法返回的元素
+    default void remove() {
+        throw new UnsupportedOperationException("remove");
+    }
+    
+    default void forEachRemaining(Consumer<? super E> action) {
+        Objects.requireNonNull(action);
+        while (hasNext())
+            action.accept(next());
+    }
+}
+```
+
+
+
+### next
+
+**查看集合中所有元素**
+
+```java
+Collection<String> c = new PriorityQueue<>();
+        c.add("yy");
+        c.add("yzy");
+        c.add("yy");
+        //创建迭代器
+        Iterator<String> iterator = c.iterator();
+        while(iterator.hasNext()){
+            String element = iterator.next();
+            System.out.println(element);
+        }
+```
+
+> for each 循环 :
+
+编译器将该循环**转换**为带有迭代器的循环,所以**可以处理任何实现了Iterable接口的对象**
+
+**Collection接口拓展了Iterable接口**,所以可以使用该循环![image-20200702160822707](JavaSE.assets/image-20200702160822707.png)
+
+```java
+		for(String s : c){
+            System.out.println(s);
+        }
+```
+
+> 访问元素的顺序取决于集合类型
+
+- ArrayList
+  - 迭代器从索引０开始，每迭代一次索引值＋１
+- ＨashSet
+  - 基本随机的顺序获得元素，确保可以遍历到所有元素，但是无法预知顺序．
+
+> 迭代器处理
+
+查找与位置紧密关联．==查找元素的唯一方法==是调用next方法，使得迭代器向前移动
+
+当调用next时,迭代器越过这个元素,返回该元素的引用.
+
+<img src="JavaSE.assets/image-20200702163504647.png" alt="image-20200702163504647" style="zoom: 25%;" />
+
+
+
+### remove
+
+**remove方法**会删除迭代器上次调用next方法返回的元素:
+
+因此如果想要删除某个元素需要**先next**.**连续两次remove之间要需要增加next**
+
+如果remove之前没有调用next,会**报错**IlleagalStateException
+
+```java
+Iterator<String> iterator = c.iterator();
+        //  删除第一个元素之前先要next
+        iterator.next();
+        iterator.remove();
+        //相邻两个元素删除要加上next
+        iterator.next();
+        iterator.remove();
+```
+
+
+
+## 泛型的实用方法
+
+Collection和Iterator都是泛型接口,可以编写处理集合类型的方法
+
+检测一个集合中是否有某个元素,**参数**为任意类型的集合
+
+```java
+public  <E> boolean container(Collection<E> collection){
+        for(E e : collection){
+            if(e.equals("yy"))
+                return true;
+        }
+        return false;
+    }
+
+
+		container container = new container();
+        System.out.println(container.container(c));
+
+```
+
+Collection接口中就声明了很多泛型方法,**实现类必须提供这些方法**
+
+```java
+public interface Collection<E> extends Iterable<E> {
+	boolean removeAll(Collection<?> c);
+	boolean retainAll(Collection<?> c);
+	boolean containsAll(Collection<?> c);
+	...
+	}
+```
+
+> AbstractCollection
+
+这么多类都要去实现显然很麻烦,类库提供了**AbstractCollection**,保持基础方法size和iterator仍为抽象方法,**为其他方法提供了例行方法**.
+
+```java
+public abstract class AbstractCollection<E> implements Collection<E> {
+    protected AbstractCollection() {
+    }
+    public abstract Iterator<E> iterator();
+    public abstract int size();
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    
+    public boolean contains(Object o) {
+        Iterator<E> it = iterator();
+        if (o==null) {
+            while (it.hasNext())
+                if (it.next()==null)
+                    return true;
+        } else {
+            while (it.hasNext())
+                if (o.equals(it.next()))
+                    return true;
+        }
+        return false;
+    }
+```
+
+集体集合类可以拓展这个类,只需实现iterator方法,其他方法可自行重写.
+
+
+
+## 类库
+
+在正常实现方法和关注性能时,选择不同的**数据结构**会带来很大差异.,用java类库帮我们实现数据结构
+
+<img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9pbWcyMDE4LmNuYmxvZ3MuY29tL290aGVyLzE0MDgxODMvMjAxOTExLzE0MDgxODMtMjAxOTExMTkxODQxNDk1NTktMTU3MTU5NTY2OC5qcGc?x-oss-process=image/format,png" alt="img" style="zoom: 50%;" />
+
+<img src="JavaSE.assets/image-20200703155529543.png" alt="image-20200703155529543" style="zoom:25%;" />
+
+
+
+### 特点总结
+
+**可添加重复元素**
+
+- **ArrayListList**:
+  - 基于数组(连续的存储位置存放对象引用),通过下标**查询速度快**
+  - **增删改慢**,修改后该元素后面的所有元素都要移动
+
+
+- **LinkedList**
+  - 基于链表(每个对象存放在单独的连接中,每个链接存放前后链接的引用),增删改秩序改变前后连接的引用,所以**增删改速度快**
+  - **查询速度稍慢**
+
+- Set
+
+
+
+- Queue
+  - PriorityQueue
+
+
+
+还有一个**Map**是独立接口
+
+- HashMap
+- LinkedHashMap
+- HashTable
+- TreeMap
+
+
+
+
+
+## List
+
+list是个**有序**集合,元素会添加到特定位置.
+
+> 访问方式
+
+- 迭代器访问
+  - 必须按顺序访问
+- 整数索引
+  - 随机访问,按任意顺序访问元素
+
+
+
+![image-20200703153310310](JavaSE.assets/image-20200703153310310.png)
+
+```java
+public interface List<E> extends Collection<E> {
+		    void add(int index, E element);
+			E remove(int index);
+			E get(int index);
+			E set(int index, E element);
+		}
+```
+
+数组支持的有序集合可以随机访问速度很快，因此适合使用List方法并提供一个**整数索引来访问**
+
+```
+void add(int index, E element);
+```
+
+
+
+### LinkedList
+
+- 基于链表(每个对象存放在单独的连接中,每个链接存放前后链接的引用),增删改只需要改变前后连接的引用,所以**增删改速度快**
+- **查询速度稍慢**
+- **不支持随机访问**，只能顺序一个个越过元素查找
+
+
+
+#### Itertor
+
+相比于Collection的Itertor,链表使用的是ListItertor方法.可以从前后两个方向遍历集合
+
+```java
+public interface ListIterator<E> extends Iterator<E> {
+    	//增删改
+    	void add(E e);
+    	void set(E e);
+    	void remove();
+    	//方向遍历
+		boolean hasPrevious();
+		E previous();
+    
+}
+
+
+		List<String> c1 =  new LinkedList<>();
+        c1.add("yy");
+        c1.add("yzy");
+        c1.add("yy");
+        ListIterator<String> listIterator =c1.listIterator();
+```
+
+####　previous
+
+与next方法一样,previous会向前越过这个元素,然后才会返回该元素
+
+```java
+listIterator.previous();
+```
+
+#### add
+
+**新增元素后,迭代器跑到了新增元素后面**
+
+增加的位置
+
+- 当迭代器在表头,新增的元素变成新表头
+
+- 但迭代器在表尾,新增的元素变成新表尾
+
+```java
+listIterator.add("next1");
+        //新增后迭代器跑到了新增元素后面
+        listIterator.next();
+        listIterator.remove();
+```
+
+由结果可得,迭代器在表头,增加了一个元素后,迭代器跳到了它的后面,yy的前面,然后执行remove,删除了yy![image-20200703174833178](JavaSE.assets/image-20200703174833178.png)
+
+####　set
+
+set方法会替换调用next或previous方法返回的上一个元素。
+
+
+
+####　索引
+
+１.链表提供了一个访问特定元素的ｇｅｔ方法,但是效率不高
+
+```java
+c1.get(i)
+```
+
+当你发现在用该方法时，思考是否使用了错误的数据结构。当链表中只有几个元素时，效率损失虽然不大，但是就不需要使用链表了（选择它的唯一理由就是减少增删改的开销），完全可以使用ＡrrayList
+
+２.**告诉你当前位置的索引**
+
+```java
+System.out.println(listIterator.previousIndex());  //-1
+```
+
+**该方法会返回执行跳跃之后返回的索引**。开始的索引为０，执行previousIndex就会返回向前越过一个元素返回的索引：－１
+
+
+
+####　注意点
+
+1.一个迭代器修改时,另一个迭代器遍历就会出现混乱.一个迭代器删除了一个元素,另一个迭代器就是无效的.链表迭代器设置可以检测这种情况并返回异常
+
+如果需要多个迭代器,那么他们只能读取，不能修改。
+
+2.多个修改方法不能连续使用，需要在之间添加next或previous方法
+
+```java
+		listIterator.add("next1");
+        listIterator.previous();
+        listIterator.remove();
+        listIterator.next();
+        listIterator.set("next");
+```
+
+３.**不要使用ｆｏｒ循环来访问便利链表，效率极低**
+
+​		每次查找元素都要从头部重新搜索
+
+
+
+## 散列表
+
+- 散列表由链表数组实现
+- 无法控制元素出现的次序
+- **快速查找元素**
+
+
+
+#### 散列码
+
+散列表为每个对象计算出一个**整数**。由对象的实例字段得出，**不同对象的散列码不同**。
+
+由**hashCode方法产生**，与**equals同步**（hashCode相等，equal为true）
+
+
+
+#### 实现
+
+每个列表被称为**桶**。
+
+每一个桶都会对应一条链表，所有哈希值相同的元素放到相同槽位对应的链表中
+
+<img src="JavaSE.assets/20181212150950298.jpg" alt="在这里插入图片描述" style="zoom:50%;" />
+
+> 索引
+
+当想要插入或查询时，为一个对象生成一个索引
+
+**先计算对象的散列表，再对桶的总数取余**。
+
+如一个对象的散列码是76268，有128个桶，那么索引就是余数：108.
+
+> 时间复杂度
+
+在**插入**的时候，我们可以通过散列函数计算出对应的散列槽位，将元素插入到对应的链表即可，时间复杂度为**O（1）**
+
+在**查找或删除**元素时，我们同样通过散列函数计算出对应的散列槽位，然后再通过遍历链表进行查找或删除，时间复杂度为**O（k）**，k为链表长度
+
+> 散列冲突
+
+但是可能这个**索引已经被其他元素填充**，那么就会产生散列冲突。
+
+桶的数目足够大，散列码合理分配，出现的次数就会较少。
+
+
+
+
+
+
+
+#### 控制性能
+
+如果想降低冲突，可以指定一个初始的桶数。
+
+> 已知元素个数
+
+桶数预计为元素个数的75%-150%。桶数为2的幂，默认16.设定的值会自动转换成最接近的大于等于该值的2的幂值。
+
+
+
+#### 再散列
+
+散列表太满，就需要**再散列**。
+
+对散列表再散列就需要创建一个桶数更多的散列表，将**旧表的元素插入新表，然后丢弃旧表**。
+
+> 填装因子
+
+必须在 "冲突的机会"（填装因子过小）与"空间利用率"（填装因子过大）之间寻找一种平衡与折衷
+
+**填装因子**判断何时再散列，**默认为0.75**，根据泊松分布。
+
+当**元素数量超过桶数乘填装因子**，就会再散列成**2的下一次幂个**桶数
+
+
+
+#### 树化
+
+jdk1.8之后，当桶满时，会将链表变成平衡二叉树
+
+链表的长度至少大于8，数组的大小最小为64才会进行树化
+
+当散列函数不好，产生很多冲突或者恶意代码填充多个相同对象，改成平衡二叉树能提高性能
+
+
+
+## 集Set
+
+set接口等同于Collection接口,更加严谨,集（set,不是集合）的add方法不允许增加重复的元素.
+
+> equals方法
+
+只要有两个**集**包含有相同的元素就算相等的.
+
+> hashCode
+
+包含相同元素的两个**集**得到相同的散列值
+
+> 为何建立Ｓｅｔ接口
+
+并不是所有的集合都是集，Set接口只接受集的方法
+
+![image-20200703154710892](C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/image-20200703154710892.png)
+
+## 问题
+
+> 什么是集合
+
+用于存储数据的容器
+
+> 为什么要使用集合
+
+集合用于存储对象
+
+相比于数组,对象个数不确定时可以存储在集合中
+
+
+
+
+
+# lambda
+
+lambda表达式是一个**可传递的代码块**
+
+由于java面向对象的特性,如果传递代码块需要搭载在对象上,为方便创建出lambda表达式
+
+```java
+{
+
+    //内部接口
+    interface Print{
+        void print(String s);
+    }
+
+    //内部实体类
+    public void Print(String something,Print print){
+        print.print(something);
+    }
+
+    public static void main(String[] args) {
+        deepclone d = new deepclone();
+        //匿名内部类实例化
+        Print print = new Print() {
+            @Override
+            public void print(String s) {
+                System.out.println(s);
+            }
+        };
+        d.Print("yy",print);
+    }
+}
+```
+
+使用lambda表达式,会自动从接口的方法中推断参数类型和返回值
+
+```java
+/*lambda*/
+        //1.完整写法
+        Print print1 = (String s)->{System.out.println(s); };
+        //2.去掉大括号,如果只有一行代码
+        Print print2 = (String s)-> System.out.println(s);
+        //3.去掉类型,如果只有一个参数,可以去掉括号
+        Print print3 = s -> System.out.println(s);
+```
+
+
+
+
+
+## 函数式接口
+
+>  特点
+
+- 接口**仅有一个抽象方法**
+- 允许定义**静态非抽象方法**
+- 允许定义**默认defalu**t非抽象方法
+- 允许Object中的**public 的覆盖方法**,如equals,toString
+- FunctionInterface注解不是必须的,检查
+
+
+
+
+
+
 
 
 
@@ -2260,7 +4006,7 @@ CommentService comment = new CommentServiceImpl();
 
 
 
-![image-20200604171114586](JavaSE.assets/image-20200604171114586.png)
+![image-20200604171114586](C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/image-20200604171114586.png)
 
 
 
@@ -2274,7 +4020,7 @@ CommentService comment = new CommentServiceImpl();
 
 具体内容**存储在栈**中,即**变量存储的就是值**
 
-<img src="JavaSE.assets/image-20200620144202560.png" alt="image-20200620144202560" style="zoom:50%;" />
+<img src="C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/image-20200620144202560.png" alt="image-20200620144202560" style="zoom:50%;" />
 
 >  传递方式
 
@@ -2284,7 +4030,7 @@ CommentService comment = new CommentServiceImpl();
 
 改变新的内存空间的值**对原本的值没有影响**
 
-![img](JavaSE.assets/1537987-20181117152204524-2019844954.png)
+![img](C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/1537987-20181117152204524-2019844954.png)
 
 ### 引用类型
 
@@ -2294,7 +4040,7 @@ CommentService comment = new CommentServiceImpl();
 
 具体**内容**存储在**堆**中,**栈**存放堆的**地址**,即**变量存储的是对象的地址**
 
-<img src="JavaSE.assets/image-20200620144250625.png" alt="image-20200620144250625" style="zoom:50%;" />
+<img src="C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/image-20200620144250625.png" alt="image-20200620144250625" style="zoom:50%;" />
 
 > 传递方式
 
@@ -2304,7 +4050,7 @@ CommentService comment = new CommentServiceImpl();
 
 改变新的内存空间的值**会影响原本的值**
 
-![img](JavaSE.assets/1537987-20181117160912759-229459932.png)
+![img](C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/1537987-20181117160912759-229459932.png)
 
 # 包
 
@@ -2378,6 +4124,123 @@ out.println("hello");
   - 名字符合规范,不要随便取名
   - 驼峰命名法
 - 优先使用不可变类
+
+
+
+# 反射
+
+能够**分析类能力**的程序
+
+- 在运行时分析类的能力
+- 运行时检查对象
+- 实现泛型数组操作代码
+- 利用Method对象
+
+
+
+## class类
+
+程序运行期间,Java为所有对象维护一个**运行时类型标识**.这个信息会**跟踪每个对象的类**,**虚拟机**通过这些信息去**执行类里方法**.(因为对象是类的实例,当对象调用方法,虚拟机就会通过信息追踪到类里去调用方法)
+
+**虚拟机为每个类型管理唯一的Class对象**，因此可以使用＝＝
+
+
+
+特殊的Java类访问这些信息--**Class类**,信息保存在这个类里.
+
+### 三种获取方式
+
+> getClass
+
+返回一个**Class类型的实例**.
+
+getClass().**getName()**:获取类名
+
+```java
+		Employee e = new Employee();
+        Class c = e.getClass();
+        String name = e.getClass().getName();
+        System.out.println("类名:"+name);
+        System.out.println("Class实例:"+c);
+```
+
+![image-20200623135225117](C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/image-20200623135225117.png)
+
+如果类在一个包里,包也会作为类名的一部分
+
+> 　forName
+
+通过类名(加上包名)**获取Class**
+
+```
+        Class l = Class.forName("com.example.blog.Employee");
+```
+
+![image-20200623140415363](C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/image-20200623140415363.png)
+
+> T.class
+
+```
+System.out.println(Employee.class);
+```
+
+
+
+### 通过反射构造实例
+
+通过**getConstructor**()**获取一个Constructor（构造器）类型的对象**，再通过**newInstance**方法**构造实例**
+
+```java
+			Class cl = Class.forName("com.example.blog.Employee");
+			Object o = cl.getConstructor().newInstance();
+            System.out.println(o);
+```
+
+
+
+### 通过反射分析类的结构
+
+java.lang.reflect包中有三个类
+
+- **Field**:描述类的字段
+  - **getName**:返回字段
+  - **getType**:返回**字段类型**的一个对象,类型为Class
+  - **getModifiers**:返回整数,用不同的0/1描述使用的**修饰符**.用Modifier类的**getModifiers分析**这个整数
+  - **getFields**:返回这个类**支持**的字段的数组(包括超类的公共成员)
+  - **getDeclareFileds** :返回类中**声明**的全部字段(包括私有成员,包成员,受保护成员,不包括超类成员)
+- **Method**:类的方法
+  - getName:返回方法
+  - getModifiers
+  - **getMothods**:返回这个类支持的方法的数组
+  - **getDeclareMethods** :返回类中声明的全部字段
+- **Constructor**:类的构造器
+  - getName:返回构造器
+  - getModifiers
+  - **getConstructors**:返回这个类支持的构造器的数组
+  - **getDeclareConstructors** :返回类中声明的全部字段
+
+```java
+		String name = "Employee";
+
+        //获取类对应的class
+        Class cl = Class.forName(name);
+
+        //获取超类
+        Class supercl = cl.getSuperclass();
+        //分析类的修饰符
+        String modifiers = Modifier.toString(cl.getModifiers());  //public
+        if (modifiers!=null){
+            System.out.print(modifiers+" ");
+        }
+        System.out.println("class "+ name);
+        if(supercl!=null){
+            System.out.println(" extends "+ supercl);
+        }
+```
+
+![image-20200623154400608](C:/Users/Barcelona/AppData/Roaming/Typora/draftsRecover/JavaSE.assets/image-20200623154400608.png)
+
+通过上述的方法输出类的结构
 
 
 
