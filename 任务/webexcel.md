@@ -256,3 +256,5 @@ html文件
 
 pandoc test.md -o test.docx
 
+图片不会报错，会显示到doc上，但是会多出一行数字
+
