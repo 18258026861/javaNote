@@ -1,8 +1,124 @@
+# 数据结构
+
+##　数值
+
+>  INTEGER
+
+- **INTEGER**(INT)
+  - 大整数型，4字节
+- BIGINT
+  - 极大整数型，8字节
+- MEDIUMINT
+  - 大整数型，3字节
+- SMALLINT
+  - 大整数型，2字节	
+- TINYINT
+  - 小整数型，1字节
+
+
+
+
+
+- DECIMAL(DEC)
+
+  - 字符串形式的浮点数，用于金融运算（）
+
+  
+
+> 浮点数
+
+- FLOAT
+  - 单精度，4字节
+- DOUBLE
+  - 双精度，8字节
+
+
+
+## 字符串
+
+- CHAR
+
+  - 固定长度，0-256
+
+- **VARCHAR**
+
+  - 可变长度，0-65535
+  - 后面需要跟长度
+
+- tinytext  
+
+  - 微型文本，2%=^8-1
+
+- **text**
+
+  - 文本串 ，2^16-1
+
+  
+
+
+
+## 时间
+
+- date 
+  - YYYY-MM-DD
+- time
+  - HH：mm：SS
+- **dateTime**
+  - YYYY-MM-DD HH:mm：ss
+- year
+
+
+
 # 表的操作语句
+
+```
+//查询当前数据库
+select database();
+//查询当前数据库的时间，用户和版本
+select now(),user(),version();
+```
+
+
+
+CREATE TABLE `t_blog` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `content` longtext CHARACTER SET utf8 COLLATE utf8_general_ci,
+  `create_time` datetime DEFAULT NULL,
+  `description` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `first_picture` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `title` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `update_time` datetime DEFAULT NULL,
+  `views` int DEFAULT NULL,
+  `type_id` bigint DEFAULT NULL,
+  `user_id` bigint DEFAULT NULL,
+  `published` int DEFAULT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `FK292449gwg5yf7ocdlmswv9w4j` (`type_id`) USING BTREE,
+  KEY `FK8ky5rrsxh01nkhctmo7d48p82` (`user_id`) USING BTREE,
+) ENGINE=InnoDB AUTO_INCREMENT=63 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC
+
+
+
+## 创建删除数据库
+
+```
+CREATE DATABASE 数据库名
+DROP DATABASE 数据库名
+```
 
 ==创建和删除表的操作尽量加判断语句==
 
 ## 建表
+
+表名不分大小写，不能使用关键字
+
+每个字段之间用逗号隔开，最后一个字段不需要逗号
+
+create table if not exist 表名 (
+
+​	表定义选项（列名，列的定义，空值，完整性约束），
+
+)
 
 ```mysql
 CREATE TABLE `t_blog` (
@@ -83,13 +199,16 @@ alter table t_blog drop content
 
 # 数据库的类型
 
+## 引擎对比
+
 数据库的引擎myisam早些年使用，现在默认使用innodb
 
 - INNODB 
-  - 安全性高
-  - 支持事务
+  - **支持行级锁**
+  - **支持外键**
+  - **安全性高**
+  - **支持事务**
   - 多表多用户操作
-
 - ＭYISAM
   - 节约空间
   - 速度快
@@ -150,7 +269,7 @@ alter table  t_blog  add CONSTRAINT `FK_typeid`foreign key (`typeid`) references
 
 
 
-# DML
+# 增删改
 
 ### insert
 
@@ -159,7 +278,7 @@ insert into 表名(字段名１，字段名2......) values(值１，值２.．�
 insert into t_blog (id,context) values('1','yy');
 ```
 
-＝＝注意点＝＝：
+==注意点==：
 
 **如果字段名为全部，就可以省略**
 
@@ -173,10 +292,6 @@ insert into t_blog (id,context) values('1','yy');
 update 表名　set 字段名１=值１，字段名２＝值２... where 条件
 update t_blog set content = 'yzy',title='yy'  where id = 1
 ```
-
-
-
-
 
 ==注意点==
 
@@ -214,7 +329,7 @@ delete和TRUNCATE的区别
 
 
 
-# DQL
+# select
 
 Data Query Language 数据查询语言
 
@@ -228,7 +343,7 @@ Data Query Language 数据查询语言
 ##　select语句顺序
 
 ```
-select [all | DISTINCT]
+select [all | DISTINCT]  DISTINCT 用于返回唯一不同的值
 from t_blog [as b]   来自什么表
 [left | right | inner join t_type]  联合查询
 [where typeId = 2 ]  指定的条件
@@ -304,6 +419,21 @@ select published+1 from t_blog    全部数据+1
 
 
 
+查询City不为‘Berlin’的字段（==注意点==：not放在字段前面）
+
+```
+select * from cc where not City = 'Berlin'
+```
+
+查询City为空的字段（==错误==：不能使用=‘’，要使用 is null）
+
+```
+select * from cc where City is null;
+slecct * from cc where City is not null;
+```
+
+
+
 ## 模糊查询
 
 含有y的模糊查询
@@ -334,17 +464,18 @@ like y_
 
 同理后面有两个三个就加几个_
 
+
+
+开头为a，结尾为b的模糊查询,在这个当中，可以查询到ab这个值
+
+```
+like 'a%b'
+```
+
 in 在多个值中选择
 
 ```
 in {'yy','yzy'}
-```
-
-为空,不为空
-
-```
-is null
-is not null
 ```
 
 
@@ -417,9 +548,8 @@ order　by  需要放到where后面
 
 ```
 order by 字段名  默认从大到小
-order by 字段名 DESC    降序
+order by 字段名 DESC    降序,颠倒
 order by 字段名 asc	 升序
-
 ```
 
 
@@ -427,7 +557,7 @@ order by 字段名 asc	 升序
 ##　函数
 
 ```mtsql
-select abs(-8)   绝对值
+	select abs(-8)   绝对值
 		ceiling(9.4)  向上取整
 		flor(9.5)  向下取整
 		rand()    返回一个随机0-1之间的数
@@ -445,7 +575,7 @@ select abs(-8)   绝对值
 时间
 
 ```mysql
-select current_date()   获取当前日期
+		select current_date()   获取当前日期
 		curdate() 		获取当前日期
 		now()			获取当前时间
 		localtime()		获取本地时间
