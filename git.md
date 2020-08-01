@@ -1,12 +1,12 @@
-# git介绍
 
-## SVN和Git的区别
+
+# SVN和Git的区别
 
 SVN：**是集中式版本控制系统**，版本存放在中央服务器。工作时，从中央服务器取得最新版本，完成工作上交最近版本。必须联网，只在服务器备份，个人电脑上没有版本；
 
 GIT：**分布式版本控制系统**，没有中央仓库，每个人的电脑都是一个完整的版本库，工作时不需要联网，因为版本都在自己电脑上。**协同的方法**：自己的电脑上修改了文件，其他人也修改了该文件，那么只需要互相传给对方就可以知道所有人的修改信息。
 
-
+sss
 
 # linux命令
 
@@ -86,7 +86,17 @@ git config --global --list
 
      
 
+## 生成公钥
 
+**SSH公钥存放处**
+
+C:\Users\Barcelona\.ssh
+
+```
+$ ssh-keygen -t rsa
+```
+
+一路回车，会生成文件，将pub文件复制到公钥处即可
 
 
 
@@ -218,8 +228,13 @@ git push -u origin master -f
 修改文件之后，将文件状态**返回到最近一次add或commit的状态**
 
 ```
-
+$ git checkout -- filename
+$ git checkout -- git.md
 ```
+
+![image-20200801171118012](git.assets/image-20200801171118012.png)
+
+![image-20200801171259759](git.assets/image-20200801171259759.png)
 
 
 
@@ -256,6 +271,16 @@ $ git reset --hard fc43
 ```
 
 ![image-20200731232922899](git.assets/image-20200731232922899.png)
+
+
+
+
+
+
+
+
+
+# 关于idea提交git的步骤
 
 ## 忽略文件
 
@@ -297,24 +322,6 @@ tep/
 ```
 
 
-
-## 生成公钥
-
-**SSH公钥存放处**
-
-C:\Users\Barcelona\.ssh
-
-```
-$ ssh-keygen -t rsa
-```
-
-一路回车，会生成文件，将pub文件复制到公钥处即可
-
-
-
-
-
-# 关于idea提交git的步骤
 
 ## 1.连接github
 
