@@ -288,9 +288,7 @@ $ git reset --hard fc43
 
 
 
-
-
-### 9.
+该it
 
 
 
@@ -399,7 +397,6 @@ $ git merge dev
 //创建并切换到新的分支
 $ git switch -c 分支名
 $ git switch 分支名
-
 ```
 
 
@@ -411,7 +408,7 @@ $ git branch -d 分支名
 $ git branch -d dev
 ```
 
-![image-20200801223821306](git.assets/image-20200801223821306.png)
+
 
 
 
