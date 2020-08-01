@@ -377,6 +377,8 @@ $ git branch
 ```
 $ git checkout 分支名
 $ git checkout dev
+
+
 ```
 
 ![image-20200801193638500](git.assets/image-20200801193638500.png)
@@ -390,14 +392,21 @@ $ git checkout dev
 ![git-br-ff-merge](git.assets/0)
 
 ```
-//将制定闻之合并到当前分支
+//将制定闻之合并到当前分支，将dev中的内容同步到当前分支
 $ git merge 分支名
-
+$ git merge dev
 ```
 
 
 
 ### 5.删除分支
+
+```//
+$ git branch -d 分支名
+$ git branch -d dev
+```
+
+![image-20200801223821306](git.assets/image-20200801223821306.png)
 
 
 
