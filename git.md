@@ -290,7 +290,7 @@ $ git reset --hard fc43
 
 
 
-
+### 9.
 
 
 
@@ -395,6 +395,11 @@ $ git checkout dev
 //将制定闻之合并到当前分支，将dev中的内容同步到当前分支
 $ git merge 分支名
 $ git merge dev
+
+//创建并切换到新的分支
+$ git switch -c 分支名
+$ git switch 分支名
+
 ```
 
 
