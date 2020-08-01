@@ -236,7 +236,25 @@ $ git checkout -- git.md
 
 ![image-20200801171259759](git.assets/image-20200801171259759.png)
 
+### 7.删除
 
+```
+//删除磁盘中的文件
+$ rm filename
+$ rm delete.md
+
+//删除git工作区中的文件
+$ git rm filename
+$ git rm delete.md
+```
+
+1.误操作，撤销删除
+
+![image-20200801171835090](git.assets/image-20200801171835090.png)1
+
+2.确定删除工作区中的文件
+
+![image-20200801172113994](git.assets/image-20200801172113994.png)
 
 ### 7.回退版本
 
