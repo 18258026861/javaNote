@@ -431,7 +431,9 @@ A编写时需要用到admin.add文件，那么拿过来用的时候**修改**了
 
 
 
-222
+master2合并分支可能会出现冲突
+
+git merge master
 
 
 
