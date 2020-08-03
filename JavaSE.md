@@ -4764,7 +4764,31 @@ API
 
 ## 流的操作
 
-### jvm不会自动回收输入输出流，需要自己手动关闭流
+### 大概过程
+
+1.创建文件对象或者具体的文件路径
+
+2.创建访问文件的**输入输出流**
+
+![image-20200803150304738](JavaSE.assets/image-20200803150304738.png)
+
+3.对输入输出流的**包装**(如转换流或者缓冲流)
+
+![image-20200803150336065](JavaSE.assets/image-20200803150336065.png)
+
+![image-20200803150345599](JavaSE.assets/image-20200803150345599.png)
+
+4.用数组**读取数据和写入数据**,如果是缓冲流,可以读取一行的数据
+
+5.**关闭流**(如果有包装,只需要关闭包装流,其他的会自动关闭)
+
+### 需要手动关闭流
+
+### 四个抽象基类
+
+![image-20200803145154396](JavaSE.assets/image-20200803145154396.png)
+
+红色的是基类,蓝色的重点掌握
 
 ### 三种分类
 
@@ -4779,18 +4803,18 @@ API
 
 #### 传输的性质
 
-- 节点流
+- **节点流**
   - 两个点之间的传输
-- 处理流
-  - 对节点流的包装，赋予其更多功能，如BufferedWriter
+- **处理流**
+  - 对节点流的**包装**，赋予其更多功能，如BufferedWriter
 
 #### 传输的起点
 
 输入输出要站在**程序的角度**看
 
-- 输入流
+- **输入流**
   - 从文件读到程序中叫输入
-- 输出流
+- **输出流**
   - 从程序写到文件中叫输出
 
 
@@ -4894,30 +4918,13 @@ File img = new File("C:\\Users\\Barcelona\\Desktop\\1.jpg");
 
 
 
-### 字符流
+### **字符流**
 
 字符流具有两个接口Reader和Writer,
 
+
+
 #### Reader
-
-##### InputStreamReader
-
-- 这是平时用到较多的，和FileInputStream相似，将**数据存放在ｃｈａｒ数组中**
-
-- FileInputStream的传输单位是**byte**,这个的传输单位是**char**
-- **需要以一个字节流作为基础，可以指定编码格式**
-
-```java
- FileInputStream inputStream = new FileInputStream(textFile);
-               //当使用字符流时,需要传入字节流作为参数,可能会乱码,需要传入一个编码格式
-                InputStreamReader reader = new InputStreamReader(inputStream,"utf-8");
-                char[] chars = new char[1024];
-                int read = reader.read(chars);
-                System.out.println(new String(chars));
-                System.out.println(read);
-```
-
-
 
 ##### FileReader
 
@@ -4925,7 +4932,7 @@ File img = new File("C:\\Users\\Barcelona\\Desktop\\1.jpg");
 
 在FileWriter中介绍了和OutputStreamWriter的关系，这里同理
 
-```
+```java
 				FileReader reader = new FileReader(textFile);//读取文件,不需要字节流
                char[] chars = new char[64];
                 int read = reader.read(chars);
@@ -4966,28 +4973,6 @@ File img = new File("C:\\Users\\Barcelona\\Desktop\\1.jpg");
 
 
 
-##### OutputStreamWriter
-
-```java
-try {
-    				FileInputStream in = new FileInputStream(textFile);
-                    InputStreamReader reader = new InputStreamReader(in);
-    				
-                    FileOutputStream out = new FileOutputStream(f+"text2.txt",true);
-                    OutputStreamWriter writer = new OutputStreamWriter(out);
-                    char[] chars = new char[20];
-                    int i;
-                    while (( i = reader.read(chars)) > 0) {
-                        writer.write(chars,0,i);
-                        System.out.println(chars);
-                    }
-                    reader.close();
-                    writer.close();
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-```
-
 
 
 ##### FileWriter
@@ -5009,6 +4994,89 @@ try {
                 }catch (Exception e){
                     e.printStackTrace();
                 }
+```
+
+
+
+
+
+### 转换流
+
+转换流能提供字符流与字节流之间的转换,**属于字符流**
+
+#### InputStreamReader
+
+- 将字节流转换为字符流的输入流
+  - 将字节转换成字符串相当于解码(97->'a')
+
+- **需要以一个字节流作为基础，可以指定编码格式**
+
+![image-20200803104727330](JavaSE.assets/image-20200803104727330.png)
+
+```java
+ FileInputStream inputStream = new FileInputStream(textFile);
+               //当使用字符流时,需要传入字节流作为参数,可能会乱码,需要传入一个编码格式
+                InputStreamReader reader = new InputStreamReader(inputStream,"utf-8");
+                char[] chars = new char[1024];
+                int read = reader.read(chars);
+                System.out.println(new String(chars));
+                System.out.println(read);
+```
+
+
+
+#### OutputStreamWriter
+
+- 将字符流转换成字节流的输出流
+  - 将字符串转换成字节流相当于编码
+
+
+
+![image-20200803104802012](JavaSE.assets/image-20200803104802012.png)
+
+```java
+try {
+    				FileInputStream in = new FileInputStream(textFile);
+                    InputStreamReader reader = new InputStreamReader(in);
+    				
+                    FileOutputStream out = new FileOutputStream(f+"text2.txt",true);
+                    OutputStreamWriter writer = new OutputStreamWriter(out,"gbk");
+                    char[] chars = new char[20];
+                    int i;
+                    while (( i = reader.read(chars)) > 0) {
+                        writer.write(chars,0,i);
+                        System.out.println(chars);
+                    }
+                    reader.close();
+                    writer.close();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+```
+
+#### 完整的转换
+
+```java
+//完整的转换流
+                //创建一个输入字节流用于转换成字符流
+                FileInputStream in = new FileInputStream(f+"text3.txt");
+                //将字节流转换成字符流
+                Reader reader = new InputStreamReader(in,"utf-8");
+
+                //创建一个输出字节流,用于将字符流转换成它
+                FileOutputStream out = new FileOutputStream(f+"text2.txt",true);
+                OutputStreamWriter writer = new OutputStreamWriter(out);
+
+                char[] chars = new char[50];
+                int len;
+                while((len = reader.read(chars))>0){
+                    writer.write(chars,0,len);
+                }
+                //关闭流
+                reader.close();
+                writer.close();
+                in.close();
+                out.close();
 ```
 
 
@@ -5091,9 +5159,247 @@ try {
 
 
 
+### 对象流
+
+用于存储和读取基本数据类型和**对象的处理流**,可以将java的对象写入数据源和读出
+
+- ObjectInputStream**保存**对象需要**序列化**
+- ObjectOutputStream**读取**对象需要**反序列化**
 
 
-### 练习
+
+#### 序列化
+
+==序列化机制==是指把内存中的java对象转化为**二进制流**,从而**持久化**到磁盘中,或者通过**网络传输**到其他节点(**在前端后台传输数据也需要可序列化**)
+
+1.创建一个对象
+
+发现了一个错误,该对象没有序列化,即**对象需要支持序列化机制**,必须让对象是可序列化的
+
+##### **1.必须实现两个接口之一**
+
+- Serializeble
+- Externalizable
+
+```
+public class object1 implements Serializable {
+```
+
+##### 2.序列化编号:全局常量UUID
+
+当object1对象没有显式定义常量UUID,类会**自动生成**,但是当**对对象进行修改**时,自动生成的**UUID会发生变化**与之前的不同,所以**最好显式定义**
+
+反序列化时会对比类的UUID和序列化后的对象的UUID,如果对上了就反序列化成功
+
+```java
+//ANY-ACCESS-MODIFIER static final long serialVersionUID = 42L;
+    static final long serialVersionUID = 42124123;
+```
+
+##### 3.类的所有属性都必须可序列化
+
+基本类型都是可序列化的,如果有内部类,该内部类也必须实现两个接口
+
+**static**修饰的变量序列化时值为空
+
+![image-20200803155652308](JavaSE.assets/image-20200803155652308.png)
+
+2.将对象序列化
+
+```java
+ ObjectOutputStream out = null;
+        try{
+            out = new ObjectOutputStream(new FileOutputStream("Object.dat",true));
+            out.writeObject(new object1("yzy",22));
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+```
+
+##### 序列化多个对象
+
+将多个对象存入list中写入
+
+```
+out = new ObjectOutputStream(new FileOutputStream("Object.dat"));
+            ArrayList< object1 > list = new ArrayList<>();
+            list.add(new object1("yzy",22));
+            list.add(new object1("yy",21));
+            out.writeObject(list);
+```
+
+
+
+#### 反序列化
+
+```java
+ObjectInputStream in = null;
+        try {
+            in = new ObjectInputStream(new FileInputStream("Object.dat"));
+
+            //List<object1> list = (List< object1 >) in.readObject();
+            object1 o = (object1) in.readObject();
+            System.out.println(o);
+            
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            if (in != null) {
+                try{
+                    in.close();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+```
+
+##### **反序列化多个对象**
+
+readObject读取的是首个对象,如果**存入的是list结构**,那么能读取到list,然后遍历所有对象,否则只会读取对象
+
+```java
+				 in = new ObjectInputStream(new FileInputStream("Object.dat"));
+                //readObject只能读取首个对象,如果存进去的不是list结构,那么读取出来的也不是list结构,只是一个对象,不能遍历
+                List<object1> list = (List< object1 >) in.readObject();
+                for(object1 object1 : list){
+                    System.out.println(object1);
+                }
+```
+
+![image-20200803163335021](JavaSE.assets/image-20200803163335021.png)
+
+### *标准流*
+
+- System.in
+- System.out
+- 两者都是字节流
+
+```java
+/*  标准输入输出流
+                    - System.in
+                    - System.out   两个类型都是字节流类型
+
+                * */
+                //读取键盘输入的字符串,将读取到的字符串大写输出,知道输入e或者exit退出
+
+                //将System.in转换成字符流
+            InputStreamReader reader= new InputStreamReader(System.in);
+            //读取整行可以使用buffered
+            BufferedReader reader1 = new BufferedReader(reader);
+            String date;
+            while(true){
+                date = reader1.readLine();
+                if (date.equalsIgnoreCase("e") || date.equalsIgnoreCase("exit")) {
+                    System.out.println("程序结束");
+                        break;
+                }
+                System.out.println("大写:"+date.toUpperCase());
+            }
+
+            //单个字节读取
+            /*int len;
+            char[] bytes = new char[1];
+            while((len = reader.read(bytes))>0){
+                String s = new String(bytes);
+                if(s.equalsIgnoreCase("e")){
+                    System.out.println("程序结束");
+                    break;
+                }
+                System.out.println(s.toUpperCase());
+            }*/
+```
+
+#### 实现能够像scanner一项分出不同类型输出
+
+```
+static class myInput{
+        public static String read() {
+            String date = null;
+            try {
+                InputStreamReader reader = new InputStreamReader(System.in);
+                //读取整行可以使用buffered
+                BufferedReader reader1 = new BufferedReader(reader);
+                date = reader1.readLine();
+                System.out.println("大写:" + date.toUpperCase());
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return date;
+        }
+
+        public static int readInt(){
+            return Integer.parseInt(read());
+        }
+        public static Double readDouble(){
+            return Double.parseDouble(read());
+        }
+        public static Float readFloat(){
+            return Float.parseFloat(read());
+        }
+    }
+    
+    Double aDouble = myInput.readDouble();
+        System.out.println(aDouble);
+```
+
+当类型不匹配时会报错
+
+![image-20200803141256757](JavaSE.assets/image-20200803141256757.png)
+
+### *数据流*
+
+- 数据流的文件打开可能会乱码,需要通过数据流读取
+- 读取的顺序要与写入的顺序一致,即类型相同才能读取,否则会乱码
+
+```java
+//写入		
+		DataOutputStream dataout = new DataOutputStream(new FileOutputStream( "test4.txt",true));
+        //数据流的输出有很多种类型,如writeUTF(String),writeInt,writeByte,writeDouble等等
+        dataout.writeUTF("yzy");
+        dataout.writeInt(22);
+        dataout.writeBoolean(true);
+        //将数据流中的内容属性到文件中
+        dataout.flush();
+        //关闭
+        dataout.close();
+
+
+//读取
+        DataInputStream dataInputStream = new DataInputStream(new FileInputStream("test4.txt"));
+        byte[] bytes = new byte[4];
+        int len;
+        //如果用byte读取,其他地方就会出现乱码,所以要根据写入的类型和顺序读取
+        /*while((len = dataInputStream.read(bytes))>0){
+            System.out.println(new String(bytes));
+        }*/
+        String s = dataInputStream.readUTF();
+        int i = dataInputStream.readInt();
+        boolean b = dataInputStream.readBoolean();
+
+        System.out.println("姓名"+s);
+        System.out.println("年龄"+i);
+        if (b == true) {
+            System.out.println("性别男");
+        } else {
+            System.out.println("性别女");
+        }
+        dataInputStream.close();
+    }
+```
+
+![image-20200803144756632](JavaSE.assets/image-20200803144756632.png)
+
+### *练习*
 
 #### 文件加密
 
