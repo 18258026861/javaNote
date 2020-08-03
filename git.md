@@ -493,6 +493,12 @@ $ git stash list
 
 2.2.使用`git stash pop` 恢复并且删除
 
+![image-20200803101956633](git.assets/image-20200803101956633.png)
+
+![image-20200803101947513](git.assets/image-20200803101947513.png)
+
+
+
 
 
 ## master主分支
