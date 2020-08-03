@@ -328,7 +328,7 @@ $ git branch -dr [remote/branch]
 
 ![git-br-initial](git.assets/0)
 
-### 1.创建分支
+## 1.创建分支
 
 当我们**创建新的分支**，例如`dev`时，Git新建了一个指针叫`dev`，指向`master`相同的提交，再把`HEAD`指向`dev`，就表示当前分支在`dev`上：
 
@@ -344,6 +344,9 @@ $ git branch dev
 //创建并切换到该分支
 //git checkout命令加上-b参数表示创建并切换
 $ git checkout -b dev
+
+//创建并切换到新的分支
+$ git switch -c 分支名
 ```
 
 蓝色括号的代表现在的分支
@@ -358,7 +361,7 @@ $ git checkout -b dev
 
 如果要在远程仓库创建新分支们可以在本地创建一个分支，然后再在远程创建同名分支。
 
-### 2.显示所有分支
+## 2.显示所有分支
 
 ```
 $ git branch
@@ -368,7 +371,7 @@ $ git branch
 
 ![image-20200801195548226](git.assets/image-20200801195548226.png)
 
-### 3.切换分支
+## 3.切换分支
 
 切换到新的分支，文件的内容不会分享，而是**只显示切换到的分支提交保存的内容**，每个分支独享自己的仓库
 
@@ -377,11 +380,13 @@ $ git checkout 分支名
 $ git checkout dev
 
 
+//切换分支
+$ git switch 分支名
 ```
 
 ![image-20200801193638500](git.assets/image-20200801193638500.png)
 
-### 4.合并分支
+## 4.合并分支
 
 假如我们在`dev`上的工作完成了，就可以把`dev`合并到`master`上。Git怎么合并呢？最简单的方法，就是直接把`master`指向`dev`的当前提交，就完成了合并：
 
@@ -394,14 +399,12 @@ $ git checkout dev
 $ git merge 分支名
 $ git merge dev
 
-//创建并切换到新的分支
-$ git switch -c 分支名
-$ git switch 分支名
+
 ```
 
 
 
-### 5.删除分支
+## 5.删除分支
 
 ```//
 $ git branch -d 分支名
@@ -412,7 +415,7 @@ $ git branch -d dev
 
 
 
-## 分支冲突
+## 6.分支冲突
 
 如果多个分支并行执行，就会导致代码冲突，存在多个版本。例如
 
@@ -423,6 +426,12 @@ A编写user
 B编写admin
 
 A编写时需要用到admin.add文件，那么拿过来用的时候**修改**了这个文件，那么user分支里的admin.add文件就修改了。B可以选择是否将这个修改的文件**合并**到admin分支.
+
+
+
+
+
+
 
 ## master主分支
 
