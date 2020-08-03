@@ -435,6 +435,64 @@ A编写时需要用到admin.add文件，那么拿过来用的时候**修改**了
 
 
 
+## 7.Bug分支
+
+**1.当发生bug时,工作还没完成,不能提交,此时还无法创建bug分支,就可以使用==暂存工作场景==**
+
+```
+$ git stash 
+```
+
+![image-20200803095701561](git.assets/image-20200803095701561.png)
+
+**2.创建bug分支**
+
+```
+$ igt checkout -b  issue-101
+```
+
+![image-20200803095806801](git.assets/image-20200803095806801.png)
+
+**3.修复bug之后add,commit**
+
+```
+$ git add .
+$ git commit -m"..."
+```
+
+**4.将bug分支合并到master**
+
+通常，合并分支时，如果可能，Git会用`Fast forward`模式，但这种模式下，删除分支后，会丢掉分支信息。
+
+如果要强制禁用`Fast forward`模式，Git就会在merge时生成一个新的commit，这样，在合并的分支就会出现分支信息
+
+```bash
+//`--no-ff`参数，表示禁用`Fast forward`：
+$ git merge --no-ff -m"fixed bug" issue-101
+```
+
+![image-20200803095918647](git.assets/image-20200803095918647.png)
+
+![image-20200803100321915](git.assets/image-20200803100321915.png)
+
+**5.恢复工作场景**
+
+1.使用`git stash list` 查看工作区
+
+```
+$ git stash list
+```
+
+![image-20200803100724262](git.assets/image-20200803100724262.png)
+
+2.1.使用`git stash apply` 恢复,但不删除,需要使用`git stash drop` 删除
+
+
+
+2.2.使用`git stash pop` 恢复并且删除
+
+
+
 ## master主分支
 
 master主分支应该非常稳定，用来发布新版本，一般情况下不允许在上面工作，工作一般情况下在新建的dev分支上工作，工作完后，比如上要发布，或者说dev分支代码稳定后可以合并到主分支master上来。
