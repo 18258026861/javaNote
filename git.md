@@ -417,6 +417,8 @@ $ git branch -d dev
 
 ## 6.分支冲突
 
+![git-br-feature1](git.assets/0)
+
 如果多个分支并行执行，就会导致代码冲突，存在多个版本。例如
 
 user和admin两个分支，
@@ -428,6 +430,8 @@ B编写admin
 A编写时需要用到admin.add文件，那么拿过来用的时候**修改**了这个文件，那么user分支里的admin.add文件就修改了。B可以选择是否将这个修改的文件**合并**到admin分支.
 
 
+
+111
 
 
 
