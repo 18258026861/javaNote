@@ -485,9 +485,9 @@ $ git stash list
 
 ![image-20200803100724262](git.assets/image-20200803100724262.png)
 
-2.1.使用`git stash apply` 恢复,但不删除,需要使用`git stash drop` 删除
+2.1.使用`git stash apply` 恢复,但不删除,需要使用`git stash drop` 删除	
 
-
+![image-20200803101255864](git.assets/image-20200803101255864.png)
 
 2.2.使用`git stash pop` 恢复并且删除
 
