@@ -158,3 +158,124 @@ Redis支持**主从同步**。数据可以从主服务器向任意数量的从�
 
 
 
+
+
+# 安装和下载
+
+## linux下载安装redis
+
+1.打开官网下载stable
+
+2.xftp传输到服务器
+
+3.解压缩
+
+tar -xvf redis-6.0.1.tar.gz
+
+4.进入redis，make**编译**
+
+```
+cd redis-6.0.1
+
+make
+```
+
+5.如果报错，可能是没有**安装gcc**，redis需要c实现
+
+yum install -y gcc g++ gcc-c++ make
+
+如果还是无法编译，升级gcc版本
+
+```bash
+yum -y install centos-release-scl  # 升级新版本 
+
+yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+
+scl enable devtoolset-9 bash
+
+#如果想要长期使用高版本
+ echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
+```
+
+6.再次编译
+
+![image-20200720161257042](Redis.assets/image-20200720161257042.png)
+
+7.进行**测试**
+
+make test，发现出错
+
+yum install tcl
+
+再次测试成功
+
+![image-20200720161834742](Redis.assets/image-20200720161834742.png)
+
+8.在src目录下**启动redis**
+
+./redis-server
+
+![image-20200720162057641](Redis.assets/image-20200720162057641.png)
+
+9.返回redis目录，修改配置文件，改为**后台启动**
+
+vim redis.conf     
+
+将daemonize no改成 yes
+
+![image-20200720162554755](Redis.assets/image-20200720162554755.png)
+
+10.**查看目前运行redis进程**
+
+ps -aux|grep redis| grep -v grep
+
+![image-20200720163928755](Redis.assets/image-20200720163928755.png)
+
+**关闭**
+
+- 杀死进程
+  - kill -9 30179
+- shutdown
+  - 在使用redis时输入shutdown
+
+11.在**src目录下**执行redis-cli**使用redis**
+
+./redis-cli
+
+![image-20200720165337217](Redis.assets/image-20200720165337217.png)
+
+
+
+## windos下安装redis
+
+1.在github上下载reis的windows安装包
+
+2.解压缩
+
+3.打开redis-server
+
+![image-20200810143205258](Redis.assets/image-20200810143205258.png)
+
+
+
+
+
+### 遇到的问题
+
+运行项目时**报错**：连接redis错误：ERR Client sent AUTH, but no password is set
+
+redis没有设置连接密码，但是项目连接数据库时发送了用户验证，导致冲突
+
+**解决方案1**.项目发送用户请求时取消密码，删除配置文件中的密码
+
+​						**失败**，删除密码会导致项目运行报错，没有设置密码
+
+**解决方案2**：redis配置文件设置密码，与项目的连接密码相同
+
+​						由于redis的配置文件没有显示出来，所以自己手动指定配置文件
+
+​						redis.windows.conf文件中添加`requirepass 连接密码`
+
+​						知道那个目录下cmd输入redis-server redis.windos.conf     
+
+​					**成功**

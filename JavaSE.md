@@ -3406,7 +3406,11 @@ public interface Collection<E> extends Iterable<E> {
 
 
 
-## 分离
+## 集合的性质和方法
+
+
+
+### 分离
 
 java集合类库将**接口**与**实现**分离,达到**多态**的目的
 
@@ -3483,7 +3487,7 @@ class LinkedListQueue<E> implements Queue<E>{
 
 
 
-## 迭代器
+### 迭代器
 
 每次调用iterator方法都会**创建全新的迭代器**
 
@@ -3518,7 +3522,7 @@ public interface Iterator<E> {
 
 
 
-### 两种遍历方式
+#### 两种遍历方式
 
 1.for each
 
@@ -3533,7 +3537,7 @@ while(iterator.hasNext()){
 }
 ```
 
-### next
+#### next
 
 **查看集合中所有元素**
 
@@ -3579,7 +3583,7 @@ Collection<String> c = new PriorityQueue<>();
 
 
 
-### remove
+#### remove
 
 **remove方法**会删除迭代器上次调用next方法返回的元素:
 
@@ -3599,7 +3603,7 @@ Iterator<String> iterator = c.iterator();
 
 
 
-## 泛型的实用方法
+### 泛型的实用方法
 
 Collection和Iterator都是泛型接口,可以编写处理集合类型的方法
 
@@ -4534,6 +4538,12 @@ Comparator com = new Comparator() {
 
 
 
+
+
+
+
+
+
 ## Queue
 
 队列接口可以在尾部添加元素,头部删除元素."**先进先出原则**"
@@ -4572,12 +4582,15 @@ Comparator com = new Comparator() {
 
 ## Map
 
-映射数据结构。用来存放键值对，如果提供了键，就能查找到值。
+映射数据结构。用来存放**键值对**，如果提供了键，就能查找到值。
 
 提供了两个通用的实现
 
-- HashMap
-- TreeMap
+- **HashMap**:**主要实现类**，线程不安全，效率高，key和value可以为空
+  - **LinkedHashMap**：可以按照添加的顺序进行遍历，**当频繁遍历时，效率高于hashMap**
+- TreeMap：按照添加的key进行排序
+- hashtable：线程安全，效率低，key和value不能为null
+  - properties：配置文件，key-value都是String类型
 
 两者的**散列或树化只应用于键**，对值没有影响。
 
@@ -4586,6 +4599,16 @@ Comparator com = new Comparator() {
 ### HashMap
 
 散列映射对键进行散列
+
+> 底层
+
+JDK7：底层使用数组+链表
+
+JDK8：底层使用数组+链表+红黑树，提高效率
+
+
+
+#### HashMap的底层实现原理
 
 
 
@@ -5399,6 +5422,54 @@ static class myInput{
 
 ![image-20200803144756632](JavaSE.assets/image-20200803144756632.png)
 
+### 压缩流
+
+
+
+压缩
+
+```
+String f = "C:\\Users\\Barcelona\\Desktop\\";
+        //输入流的文件
+        File file1 = new File(f+"newfile");
+        ZipOutputStream zipout = null;
+        ZipInputStream zipin = null;
+        ZipEntry zipEntry = null;
+        try {
+        int len;
+        //要将输出流放在循环外
+        zipout = new ZipOutputStream(new FileOutputStream(f + "zip.zip"));
+            for(File file:file1.listFiles()){
+                zipin = new ZipInputStream(new FileInputStream(file));
+
+                //一个ZipEntry表示一个压缩文件或目录，如果是压缩文件，我们就用read()方法不断读取，直到返回-1：
+                zipEntry = new ZipEntry(file.getName());
+                //将文件放入压缩文件输出流中
+                zipout.putNextEntry(zipEntry);
+
+                byte[] bytes = new byte[1024];
+                while((len = zipin.read(bytes))>0){
+                    zipout.write(bytes,0,len);
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            try {
+                //这个要放在zipoutclose前面
+                //zipout.closeEntry();
+                zipout.close();
+                zipin.close();
+
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+```
+
+
+
 ### *练习*
 
 #### 文件加密
@@ -5478,6 +5549,10 @@ static class myInput{
                 reader.close();
             }
 ```
+
+
+
+
 
 
 

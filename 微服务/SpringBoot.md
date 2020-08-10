@@ -17,6 +17,14 @@ SpringBoot **约定大于配置**，默认进行了很多配置，只需要很�
 - 内嵌容器简化Web项目
 - 没有XML配置和冗余代码
 
+
+
+
+
+> 
+
+
+
 ## 微服务
 
 > 什么是微服务
@@ -25,7 +33,7 @@ SpringBoot **约定大于配置**，默认进行了很多配置，只需要很�
 
 业务拆分成一个一个的服务，彻底去掉耦合，每一个微服务提供单个业务功能，一个服务只做一件事。 小服务之间用http或RPC方式互通
 
-> 
+> 单体应用框架
 
 就是SSM，全部放在一个服务器上，打包为一个war包。
 
@@ -99,6 +107,8 @@ public class Contreoller {
 
 资源目录下创建banner.txt
 
+
+
 ## 打包
 
 > package
@@ -129,6 +139,8 @@ public class Contreoller {
 
 
 
+# 
+
 # 1.自动装配
 
 ## 依赖
@@ -136,6 +148,8 @@ public class Contreoller {
 #### pom.xml
 
 pom.xml的**父类** spring-boot-starter-parent
+
+
 
 > 启动器
 >
@@ -152,6 +166,10 @@ pom.xml的**父类** spring-boot-starter-parent
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 ```
+
+
+
+
 
 ####  spring-boot-starter-parent
 
@@ -197,6 +215,8 @@ spring-boot-dependencies 包下，已经指定好了那个版本，依赖时就�
 
 pom.xml的web包就是从dependencies中取出来
 
+
+
 ## 主程序
 
 ```java
@@ -212,7 +232,11 @@ public class DemoApplication {
 }
 ```
 
+
+
 ### 注解
+
+
 
 #### @主配置类：springBootApplication：
 
@@ -246,6 +270,10 @@ public @interface SpringBootApplication {
 @Configuration
 public @interface SpringBootConfiguration {
 ```
+
+
+
+
 
 
 
@@ -346,7 +374,7 @@ protected List<String> getCandidateConfigurations(AnnotationMetadata metadata, A
 
 里面储存的都是配置类的路径，当你需要用时，就会通过路径调用配置类（比如视图解析器）
 
-
+> 
 
 #### 导图
 
@@ -389,6 +417,8 @@ public SpringApplication(ResourceLoader resourceLoader, Class<?>... primarySourc
 		this.mainApplicationClass = deduceMainApplicationClass();
 	}
 ```
+
+---
 
 
 
@@ -778,6 +808,12 @@ private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
 
 
 
+
+
+
+
+
+
 ## 模板引擎
 
 > 什么是模板引擎
@@ -785,6 +821,8 @@ private static final String[] CLASSPATH_RESOURCE_LOCATIONS = {
  是为了使用户界面与业务数据（内容）分离而产生的，它可以生成特定格式的文档，用于网站的模板引擎就会生成一个标准的[HTML](https://baike.baidu.com/item/HTML/97049)文档 ，比如JSP就是一个模板引擎。
 
 **有时候经常需要根据后端返回的json数据，然后来生成html，再渲染页面。**，模板引擎就是写一个页面模板，将一些动态的值也能通过表达式填充到指定位置
+
+
 
 > 导入依赖
 
@@ -889,6 +927,8 @@ ${message}
 ```
 
 >  获取静态资源需要@{路径}
+
+
 
 ```js
 // src的默认路径是static路径下（起手加/）  static
@@ -1141,7 +1181,11 @@ public class EmployeeDap {
 }
 ```
 
+
+
 如果直接把主页跳转放在controller层，**页面的样式不会加载**
+
+
 
 
 
@@ -1336,6 +1380,12 @@ public class LoginInterceptor implements HandlerInterceptor {
 
 
 
+
+
+
+
+
+
 ### 显示所有职员信息
 
 1.**复用侧边栏**跳转**执行显示所有职员信息的业务**并返回**员工信息页面**
@@ -1370,6 +1420,8 @@ public class LoginInterceptor implements HandlerInterceptor {
 								</tr>
 							</tbody>
 ```
+
+
 
 3.提供**通过员工id**进行**修改**和**删除**
 
@@ -1477,6 +1529,8 @@ spring:
 2.提交表单时部门提交的参数应该是department.id
 
 ​		如果提交的是department就会报错，因为我们赋给下拉框的值是id的值，所以提交的值也应该是id
+
+
 
 
 
@@ -2181,3 +2235,1404 @@ apach shiro是一个Java的安全框架
    	Realm充当了**Shiro与应用安全数据间的“桥梁”或者“连接器”**。也就是说，当对用户执行认证（登录）和授权（访问控制）验证时，Shiro会从应用配置的Realm中查找用户及其权限信息。　　
 
   
+
+　>  架构
+
+![在这里插入图片描述](SpringBoot.assets/20181205211620525.png)
+**Subject**：主体，可以看到主体可以是任何可以与应用交互的“用户”；
+**SecurityManager** ： 相 当 于 SpringMVC 中 的 DispatcherServlet ,是 Shiro 的心脏；所有具体的交互都通过 		SecurityManager 进行控制；它管理着所有 Subject、且负责进行认证和授权、及会话、缓存的管理。
+**Authenticator**：认证器，负责主体认证的，这是一个扩展点，如果用户觉得 Shiro 默认的不好，可以自定义实		现；其需要认证策略（Authentication Strategy），即什么情况下算用户认证通过了；
+**Authrizer**：授权器，或者访问控制器，用来决定主体是否有权限进行相应的操作；即控制着用户能访问应用中的	哪些功能；
+**Realm**：可以有 1 个或多个 Realm，可以认为是安全实体数据源，即用于获取安全实体的；可以是 JDBC 实现，		也可以是 LDAP 实现，或者内存实现等等；由用户提供；注意：Shiro不知道你的用户/权限存储在哪及以何种		格式存储；所以我们一般在应用中都需要实现自己的 Realm；
+**SessionManager**：管理session的生命周期.而 Shiro 并不仅仅可以用在 Web 环境，也可以用在如普通的 JavaSE 环境、EJB 等环境；所有呢，Shiro 就抽象了一个自己的 Session来管理主体与应用之间交互的数据；这样的话，比如我们在 Web 环境用，刚开始是一台Web 服务器；接着又上了台 EJB 服务器；这时想把两台服务器的会话数据放到一个地方，
+		这个时候就可以实现自己的分布式会话（如把数据放到 Memcached 服务器）；
+**SessionDAO**：DAO 大家都用过，数据访问对象，用于会话的 CRUD，比如我们想把 Session保存到数据库，那		么可以实现自己的 SessionDAO，通过如 JDBC 写到数据库；比如想把Session 放到 Memcached 中，可以实		现自己的 Memcached SessionDAO；另外 SessionDAO中可以使用 Cache 进行缓存，以提高性能；
+**CacheManager**：缓存控制器，来管理如用户、角色、权限等的缓存的；因为这些数据基本
+		上很少去改变，放到缓存中后可以提高访问的性能
+**Cryptography**：密码模块，Shiro 提高了一些常见的加密组件用于如密码加密 
+
+
+
+### 步骤
+
+1.导入依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.shiro/shiro-core -->
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.30</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+```
+
+2.编写配置文件
+
+​	shiro.ini
+
+```ini
+[users]
+# user 'root' with password 'secret' and the 'admin' role
+root = secret, admin
+# user 'guest' with the password 'guest' and the 'guest' role
+guest = guest, guest
+# user 'presidentskroob' with password '12345' ("That's the same combination on
+# my luggage!!!" ;)), and role 'president'
+presidentskroob = 12345, president
+# user 'darkhelmet' with password 'ludicrousspeed' and roles 'darklord' and 'schwartz'
+darkhelmet = ludicrousspeed, darklord, schwartz
+# user 'lonestarr' with password 'vespa' and roles 'goodguy' and 'schwartz'
+lonestarr = vespa, goodguy, schwartz
+
+# -----------------------------------------------------------------------------
+# Roles with assigned permissions
+# -----------------------------------------------------------------------------
+[roles]
+# 'admin' role has all permissions, indicated by the wildcard '*'
+admin = *
+# The 'schwartz' role can do anything (*) with any lightsaber:
+schwartz = lightsaber:*
+# The 'goodguy' role is allowed to 'drive' (action) the winnebago (type) with
+# license plate 'eagle5' (instance specific id)
+goodguy = winnebago:drive:eagle5
+```
+
+3.运行文件
+
+```java
+public class Quickstart {
+    private static final transient Logger log = LoggerFactory.getLogger(Quickstart.class);
+    public static void main(String[] args) {
+        //      通过读取ini配置文件读取realms, users, roles and permissions         通过读取类路径根目录下的ini创建一个工厂
+        Factory<SecurityManager> factory = new IniSecurityManagerFactory("classpath:shiro.ini");
+        SecurityManager securityManager = factory.getInstance();
+        // 对于这个简单的快速入门示例，使用SecurityManager可作为JVM单例访问。但大多数应用程序不会这样做而依赖于它们的容器配置或web.xml或webapps
+        SecurityUtils.setSecurityManager(securityManager);
+         /*这时，环境已经建立好了，上的都是模板，固定的*/
+
+
+        /*下面的是核心代码*/
+        // 获取当前执行的用户
+        Subject currentUser = SecurityUtils.getSubject();
+        // 通过用户获取session（这个session不是web的，而是shiro自身的，不需要wb）
+        Session session = currentUser.getSession();
+        session.setAttribute("someKey", "aValue");
+        String value = (String) session.getAttribute("someKey");
+        if (value.equals("aValue")) {
+            log.info("subject.session---------------------------------------- [" + value + "]");
+        }
+
+        // 判断当前用户是否被认证     Authenticated认证
+        if (!currentUser.isAuthenticated()) {
+//            Token令牌     生成一个账号密码令牌
+            UsernamePasswordToken token = new UsernamePasswordToken("lonestarr", "vespa");
+            token.setRememberMe(true);
+            try {
+                currentUser.login(token);     // 执行登录流程
+            } catch (UnknownAccountException uae) {
+                log.info("There is no user with username of " + token.getPrincipal());
+            } catch (IncorrectCredentialsException ice) {
+                log.info("Password for account " + token.getPrincipal() + " was incorrect!");
+            } catch (LockedAccountException lae) {
+                log.info("The account for username " + token.getPrincipal() + " is locked.  " +
+                        "Please contact your administrator to unlock it.");
+            }
+            // ... catch more exceptions here (maybe custom ones specific to your application?
+            catch (AuthenticationException ae) {
+                //unexpected condition?  error?
+            }
+        }
+
+        //say who they are:
+        //print their identifying principal (in this case, a username):
+        log.info("User [" + currentUser.getPrincipal() + "] logged in successfully.");
+
+        //测试当前用户是否有该权限
+        if (currentUser.hasRole("schwartz")) {
+            log.info("May the Schwartz be with you!");
+        } else {
+            log.info("Hello, mere mortal.");
+        }
+
+        //粗化的权限
+        if (currentUser.isPermitted("lightsaber:wield")) {
+            log.info("You may use a lightsaber ring.  Use it wisely.");
+        } else {
+            log.info("Sorry, lightsaber rings are for schwartz masters only.");
+        }
+
+        //细化（实例化）的权限:
+        if (currentUser.isPermitted("winnebago:drive:eagle5")) {
+            log.info("You are permitted to 'drive' the winnebago with license plate (id) 'eagle5'.  " +
+                    "Here are the keys - have fun!");
+        } else {
+            log.info("Sorry, you aren't allowed to drive the 'eagle5' winnebago!");
+        }
+
+        //注销
+        currentUser.logout();
+
+        System.exit(0);
+    }
+}
+
+```
+
+
+
+
+
+### 整合springboot
+
+#### 前提
+
+创建页面用于区分用户权限（A用户只能去add，不能去update）
+
+1.创建新项目，导入web和thymeleaf 
+
+2.编写首页html，**放在templates目录下！**
+
+3.编写add,update页面，放在templates/user目录下
+
+4.编写controller跳转到首页，add，update
+
+
+
+
+
+#### 正式
+
+1.导入shiro-spring整合包
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.apache.shiro/shiro-spring -->
+<dependency>
+    <groupId>org.apache.shiro</groupId>
+    <artifactId>shiro-spring</artifactId>
+    <version>1.5.3</version>
+</dependency>
+
+```
+
+2.编写配置类（基本框架），
+
+  先编写**realm**的类（需要自定义）
+
+```java
+public class realm extends AuthorizingRealm {
+
+//    授权
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+        System.out.println("realm认证----------------------AuthorizationInfo");
+        return null;
+    }
+
+//    认证
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        System.out.println("realm授权----------------------AuthenticationInfo");
+        return null;
+    }
+}
+```
+
+​	**shiroConfig**： ==顺序==是先realm，再manager，再factorybean
+
+```java
+@Configuration
+public class shiroConfig  {
+
+//   shiroFilterFactoryBan                        这是第三部，需要manage管理
+    @Bean
+    public ShiroFilterFactoryBean bean(@Qualifier("manager") DefaultWebSecurityManager defaultWebSecurityManager){
+        ShiroFilterFactoryBean bean = new ShiroFilterFactoryBean();
+//        设置安全管理器
+        bean.setSecurityManager(defaultWebSecurityManager);
+        return bean;
+    }
+
+//      DefaultWebSecurityManager               这是第二部，因为manager需要realm
+    @Bean(name="manager")
+    public DefaultWebSecurityManager defaultWebSecurityManager(@Qualifier("realm") realm realm){
+        DefaultWebSecurityManager defaultWebSecurityManager = new DefaultWebSecurityManager();
+//          关联realm   ,这里的参数不能直接realm（），因为realm是spring管理的，所以在方法的参数上用spring容器的bean对象
+        defaultWebSecurityManager.setRealm(realm);
+
+        return defaultWebSecurityManager;
+    }
+
+//    realm  对象，需要自定义（创建一个realm类）   这是第一步第一步
+    @Bean
+    public realm realm(){
+        return new realm();
+    }
+}
+```
+
+3.具体实现用户权限
+
+​	**bean**方法内
+
+```java
+HashMap<String,String> map = new HashMap<>();
+//        这里的资源写的是路径（controller里的），不是页面
+        map.put("/toadd","authc");
+        map.put("/toupdate","authc");
+//          设置过滤器的内容（哪些路径要被过滤及其访问权限）
+        bean.setFilterChainDefinitionMap(map);
+
+//        设置跳转登录页面，当被拦截时跳转到登录页面
+        bean.setLoginUrl("/tologin");
+```
+
+4.编写**controller登录操作**
+
+```java
+@RequestMapping("/login")
+    public String login(String username,String password,Model model){
+        //        获取当前用户
+        Subject subject = SecurityUtils.getSubject();
+//        封装用户的登录数据
+        UsernamePasswordToken token = new UsernamePasswordToken(username, password);
+        try{
+//      执行登录流程（所有验证的步骤shiro都帮我们做了）,如果错误就会报异常
+            subject.login(token);
+            return "index";
+        }catch (UnknownAccountException e){
+            model.addAttribute("msg","用户不存在");
+            return "/user/login";
+        }catch (IncorrectCredentialsException e){
+            model.addAttribute("msg","密码错误");
+            return "/user/login";
+        }
+    }
+```
+
+登录：
+
+![1589018057526](SpringBoot.assets/1589018057526.png)
+
+然后查看控制台：发现**执行了realm的方法**
+
+![1589018099538](SpringBoot.assets/1589018099538.png)
+
+两者之间我们并没有做什么联系，但是shiro就帮我们自动连接起来了，那么就可以**在realm中添加登录数据**
+
+5.realm编写数据获取和认证
+
+```java
+//    认证
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+        System.out.println("realm认证----------------------AuthenticationInfo");
+
+//      可以从数据库获取数据  ，这里手动设置数据
+        String username="YY";
+        String pasword = "1";
+
+        UsernamePasswordToken usertoken =  (UsernamePasswordToken)token;
+//        账号认证  ，认证参数里的token是全局存在的，登陆那边封装好了，这边就可以用
+        if(!usertoken.getUsername().equals(username)){
+//            return null 即抛出异常，由于是判断username的，异常就是用户名不存在
+            return null;
+        }
+//        我们不做密码认证，有可能泄漏    。shiro暗地里做密码认证，
+        return new SimpleAuthenticationInfo("",pasword,"");
+    }
+```
+
+登录时会智能判断异常情况
+
+6.设置未授权页面
+
+```java
+//        设置未授权请求的页面
+        bean.setUnauthorizedUrl("/tounauthorized");
+```
+
+
+
+#### 整合mybatis
+
+前几部操作和springboot整合mybatis一样（可以多一步service层）
+
+1.在**realm的认证**中添加==数据库操作==
+
+```java
+//      从数据库获取数据
+        User user = userService.findUserByUsername(usertoken.getUsername());
+//        账号认证  ，认证参数里的token是全局存在的，登陆那边封装好了，这边就可以用
+        if(user==null){
+            return null;
+        }
+//        我们不做密码认证，有可能泄漏    。shiro暗地里做密码认证，
+        return new SimpleAuthenticationInfo("",user.getPassword(),"");
+    }
+```
+
+2.为当前用户添加==权限==
+
+ralme的授权方法（两种）
+
+- 为所有用户授予该权限
+- 通过认证中数据库操作获取user对象的权限并给予当前用户
+
+```java
+//    授权，用于授权账号
+    @Override
+    protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+//      只要经过这里就会授权
+        SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+//        为每个用户授予该权限
+//        info.addStringPermission("user:add");
+
+//        获取当前登录的用户
+        Subject subject = SecurityUtils.getSubject();
+//        从下面的密码认证第一个 user拿到  user对象
+        User user = (User)subject.getPrincipal();
+//        为subject设置数据库user对象里的权限
+        info.addStringPermission(user.getPerms());
+
+        return info;
+    }
+```
+
+**用户登录情况**：
+
+![1589038999712](SpringBoot.assets/1589038999712.png)
+
+```java
+		map.put("/toadd","perms[user:add]");
+        map.put("/toupdate","perms[user:update]");
+```
+
+那么当YY登录时，只能访问update页面
+
+​       当yzy登录时，不能访问任何网页
+
+​		当y登录时，能访问add网页
+
+
+
+#### 整合thymeleaf
+
+1.导包
+
+```xml
+<!--thymeleaf中使用shiro-->
+        <dependency>
+            <groupId>com.github.theborakompanioni</groupId>
+            <artifactId>thymeleaf-extras-shiro</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+```
+
+2.配置类Config，注册shiroDialect
+
+```java
+@Bean(name = "shiroDialect")
+    public ShiroDialect shiroDialect(){
+        return new ShiroDialect();
+    }
+```
+
+3.html
+
+```html
+<!-- 验证当前用户是否为“访客”，即未认证（包含未记住）的用户。 -->
+<p shiro:guest="">访客
+
+<!-- 认证通过或已记住的用户。 -->
+<p shiro:user="y">
+    认证通过活着已记住用户
+</p>
+
+<!-- 已认证通过的用户。不包含已记住的用户，这是与user标签的区别所在。 -->
+<p shiro:authenticated="user">
+    Hello, <span shiro:principal=""></span>, 已通过用户的信息
+</p>
+
+<!-- 输出当前用户信息，通常为登录帐号信息。 -->
+<p> 输出当前用户信息 <shiro:principal/></p>
+
+<!-- 未认证通过用户，与authenticated标签相对应。与guest标签的区别是，该标签包含已记住用户。 -->
+<p shiro:notAuthenticated="">
+    未认证通过用户
+</p>
+
+<!-- 验证当前用户是否属于该角色。 -->
+<a shiro:hasRole="YY" >你是否属于YY</a><!-- 拥有该角色 -->
+
+<!-- 与hasRole标签逻辑相反，当用户不属于该角色时验证通过。 -->
+<p shiro:lacksRole="developer"><!-- 没有该角色 -->
+    你不是YY
+</p>
+
+<!-- 验证当前用户是否属于以下所有角色。 -->
+<p shiro:hasAllRoles="developer, 2"><!-- 角色与判断 -->
+    You are a developer and a admin.
+</p>
+
+<!-- 验证当前用户是否属于以下任意一个角色。 -->
+<p shiro:hasAnyRoles="admin, vip, developer,1"><!-- 角色或判断 -->
+    You are a admin, vip, or developer.
+</p>
+
+<!--验证当前用户是否拥有指定权限。 -->
+<a shiro:hasPermission="user:update" >你拥有update权限</a><!-- 拥有权限 -->
+
+<!-- 与hasPermission标签逻辑相反，当前用户没有制定权限时，验证通过。 -->
+<p shiro:lacksPermission="user:add"><!-- 没有权限 -->
+    你没有add权限，但是看得到我
+</p>
+
+<!-- 验证当前用户是否拥有以下所有角色。 -->
+<p shiro:hasAllPermissions="user:add, user:update"><!-- 权限与判断 -->
+    你是update，add权限人员
+</p>
+
+<!-- 验证当前用户是否拥有以下任意一个权限。 -->
+<p shiro:hasAnyPermissions="user:add, user:update"><!-- 权限或判断 -->
+    你是update或add权限人员
+</p>
+```
+
+
+
+
+
+#### 总结
+
+shiro的具体执行流程：
+
+1.通过**controller**请求时，会触发**realm的认证方法AuthenticationInfo**（通过token连接）
+
+​			**具体操作**：realm的AuthenticationInfo用于**验证数据是否正确**和**读取数据库数据**
+
+​				    如果通过认证，此时数据库的user就会变成subject
+
+2.**realm的授权方法AuthorizationInfo**会对当前用户**Subject**进行**授权**
+
+​			**具体操作**：realmd的AuthorizationInfo会从读取的数据为**当前用户授权（addStringPermission）**
+
+​					将数据库的user的权限赋给subject
+
+3.**DefaultWebSecurityManager**会**关联realm**和**ShiroFilterFactoryBean**
+
+​			**具体操作**：setRealm(realm) ：获取realm的数据
+
+4.**ShiroFilterFactoryBean**设置资源**权限**，设置登录和未授权**跳转页面**
+
+​			**具体操作**：1.setSecurityManager(defaultWebSecurityManager);   通过manager获取realm的数据
+
+​								2.map.put("/toadd","perms[user:add]");     设置资源的权限，并将map放入过滤器
+
+​								3. setXXXurl("")    											 设置跳转页面
+
+​					将资源设置和获取的数据进行对比，成功就访问，不成功跳转未授权页面
+
+5.controller根据shiro返回对应的信息
+
+> 流程
+
+1.controller 以**token为媒介**，将参数传递给realm。subject的**login会将登录流程交给realm**，返回结果
+
+```java
+Subject subject = SecurityUtils.getSubject();
+//          封装前端传来的信息
+        UsernamePasswordToken token = new UsernamePasswordToken(username,password);
+        try {
+            //        为当前用户登录该账号密码，这个方法会在realm中验证是否正确然后异常
+            subject.login(token);
+```
+
+2.realm 通过token媒介获得的参数，验证参数是否正确
+
+```java
+//          token是连接controller和realm的桥梁，通过token得到controller传过来的账号密码
+        UsernamePasswordToken token1 = (UsernamePasswordToken) token;
+//          读取账号密码进行比较
+		if(!token1.getUsername().equals(username)){
+```
+
+3.登录成功，将权限赋予给当前用户
+
+
+
+4.DefaultWebSecurityManager 获得realm
+
+```java
+        manager.setRealm(realm());
+```
+
+5.ShiroFilterFactoryBean纳入DefaultWebSecurityManager管理，并设置拦截路径等信息
+
+```java
+        map.put("/admin/tags","authc");
+//      设置过滤路径
+        bean.setFilterChainDefinitionMap(map);
+//        将当前用户纳入安全管理
+        bean.setSecurityManager(manager);
+//      设置登录页面路径
+        bean.setLoginUrl("/admin/tologin");
+
+```
+
+
+
+# 7.Swagger
+
+> 背景
+
+**大后端**：前端只管理静态页面htmk，css，后端使用模板引擎
+
+**前后端分离**：
+
+- **后端**：后端控制器，服务层，数据访问层
+- **前端**：前端控制层，视图层
+  - 前端可以通过伪造后端数据，不依靠后端也能跑起来（前端工程化）
+- 前后端如何**交互**：通过接口，传递json数据
+- 前后端相对**独立**，松耦合，可以部署在不同的服务器上
+
+
+
+产生的问题：
+
+- 前后端沟通困难，改变业务麻烦
+
+解决问题
+
+- 指定完善的schema，实时更新API，降低集成风险
+- 前端测试后端接口：postman
+- 后端提供接口，需要实时更新最新更改
+
+
+
+## 优点
+
+更快捷更方便进行接口API的开发
+
+- 最流行的API框架
+- 是Resultful风格的API ，文档自动生成：**API文档与API定义同步更新**
+- 可以直接运行，在线测试API接口
+- 支持多种语言
+
+
+
+
+
+## 集合成springboot
+
+### 入门
+
+1.创建项目，选择web，然后导包
+
+```xml
+ <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger-ui -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>2.9.2</version>
+        </dependency>
+```
+
+2.配置Swagger
+
+  SwaggerConfig:什么都没写就是默认设置
+
+```java
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig {
+
+        
+}
+```
+
+3.编写controller和测试
+
+```java
+@RestController
+public class Controller {
+
+    @RequestMapping("/hi")
+    public String show(){
+        return "hi";
+    }
+}
+```
+
+访问网页 http://localhost:8080/swagger-ui.html 
+
+![1589123637598](SpringBoot.assets/1589123637598.png)
+
+
+
+### 配置Swagger
+
+Swagger的bean实例Docket
+
+- 过滤器  paths（PathSelectors.xxx）
+- 接口扫描 apis(RequestHandlerSelectors.XXX）
+- 开启关闭  enable（）
+- 分组   groupName（）
+- 文档信息  apiInfo（）
+
+```JAVA
+@Configuration
+@EnableSwagger2
+public class SwaggerConfig {
+
+    @Bean
+    public Docket docket1(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y1Y");
+    }
+    @Bean
+    public Docket docket2(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y2Y");
+    }
+
+    @Bean
+    public Docket docket(@Qualifier("apiInfo") ApiInfo apiInfo,Environment environment){
+        
+        Profiles dev = Profiles.of("dev");
+        boolean isdev = environment.acceptsProfiles(dev);
+
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo)
+                .enable(isdev)
+                .groupName("YZY")
+                .select()
+             .apis(RequestHandlerSelectors.basePackage("com.example.swagger.controller"))
+                .paths(PathSelectors.any())
+                .build();
+    }
+
+   
+
+    @Bean
+    public ApiInfo apiInfo(){
+
+        Contact contact = new Contact("YZY","http://localhost:8080/swagger-ui.html#/","1061603811@qq.com");
+        return new ApiInfo("YZY的API文档",
+                "文档描述",
+                "1.1",
+                "http://localhost:8080/swagger-ui.html#/", contact,
+                "Apache 2.0",
+                "http://www.apache.org/licenses/LICENSE-2.0",
+                new ArrayList());
+    }
+}
+```
+
+
+
+#### 文档信息
+
+可以自己设置一些文档信息
+
+```java
+		return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo)
+
+
+//    设置一个Swagger apiInfo  ,覆盖了默认apiInfo
+    @Bean
+    public ApiInfo apiInfo(){
+//      作者信息
+        Contact contact = new Contact("YZY","http://localhost:8080/swagger-ui.html#/","1061603811@qq.com");
+
+        return new ApiInfo("YZY的API文档",
+                "文档描述",
+                "1.1",
+                "http://localhost:8080/swagger-ui.html#/", contact,
+                "Apache 2.0",
+                "http://www.apache.org/licenses/LICENSE-2.0",
+                new ArrayList());
+    }
+
+}
+```
+
+测试
+
+![1589125939220](SpringBoot.assets/1589125939220.png)
+
+#### 扫描接口和过滤器
+
+使用Docket.select()
+
+```java
+		return new Docket(DocumentationType.SWAGGER_2)
+                .select()
+  /*RequestHandlerSelector：配置要扫描的接口
+        basePackage:指定要扫描的包
+            basePackage("com.example.swagger.controller") 扫描controller包里的接口
+        any: 所有接口
+        none：不扫描
+        withClassAnnotation 扫描类上的注解
+                withClassAnnotation(RestController.class)  扫描有RestAonroller注解的类
+         withMethodAnnotation 扫描方法上的注解
+                withMethodAnnotation(RequestMapping.class)  扫描有RequestMapping注解的方法*/
+                .apis(RequestHandlerSelectors.basePackage("com.example.swagger.controller"))
+            
+                /*paths过滤路径（参数是需要的，过滤掉不需要的）
+                *      PathSelector:路径选择器
+                *           ant：路径
+                            any:所有
+                            none：都不      */
+                .paths(PathSelectors.any())
+                .build();
+    }
+```
+
+
+
+#### 不同环境下开启关闭
+
+手动开启关闭swagger
+
+```java
+//  默认true
+.enable(false)
+```
+
+根据环境自动开启关闭
+
+![1589182320937](SpringBoot.assets/1589182320937.png)
+
+```java
+@Bean
+    public Docket docket(@Qualifier("apiInfo") ApiInfo apiInfo,Environment environment){
+
+//        设置swagger开启的环境
+        Profiles dev = Profiles.of("dev");
+//        获取当前项目的环境，判断swagger是否在开启的环境中
+        boolean isdev = environment.acceptsProfiles(dev);
+
+        return new Docket(DocumentationType.SWAGGER_2)
+				//  根据isdev是否开启              
+                .enable(isdev)
+```
+
+当前环境是dev，所以生效
+
+访问swagger，**注意端口是8081**
+
+
+
+#### 分组
+
+1.配置一个分组
+
+```java
+   .groupName("YZY")
+```
+
+测试
+
+![1589183082792](SpringBoot.assets/1589183082792.png)
+
+2.配置多个分组（即创建多个Docket方法）
+
+```java
+@Bean
+    public Docket docket1(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y1Y");
+    }
+    @Bean
+    public Docket docket2(){
+        return new Docket(DocumentationType.SWAGGER_2).groupName("Y2Y");
+    }
+```
+
+测试
+
+![1589183301532](SpringBoot.assets/1589183301532.png)
+
+#### 实体类
+
+定义一个user类
+
+然后在controller编写一个返回实体类的请求
+
+```
+@GetMapping("/user")
+    public User user(){
+        return new User();
+    }
+```
+
+测试
+
+![1589186138684](SpringBoot.assets/1589186138684.png)
+
+
+
+#### 注释
+
+> 为实体类添加注释
+
+```java
+//@ApiModel给实体类添加注释
+@ApiModel("用户")
+public class User implements Serializable {
+    private static final long serialVersionUID = -77061385939233351L;
+
+    private Integer id;
+
+//    @ApiModelProperty给属性添加注释
+    @ApiModelProperty("用户名")
+    private String username;
+
+    @ApiModelProperty("密码")
+    private String password;
+```
+
+![1589186516580](SpringBoot.assets/1589186516580.png)
+
+> 为controller加注释
+
+```
+//    ApiOperation 为controller的方法加注释
+    @ApiOperation("实体类")
+```
+
+
+
+### 测试
+
+![1589187242370](SpringBoot.assets/1589187242370.png)
+
+
+
+
+
+## 总结作用
+
+1.接口文档的设置（配置文件）
+
+2.在线测试
+
+在正式发布**需要关闭**为了安全和效率
+
+
+
+# 8.任务
+
+1.创建一个线程
+
+```java
+@Service
+public class AsyncService {
+
+    public void hello()  {
+        try {
+            Thread.sleep(3000);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            System.out.println("sleep-3000ms");
+        }
+
+    }
+}
+```
+
+2.在controller中调用
+
+```java
+@RestController
+public class Controller {
+
+    @Autowired
+    AsyncService asyncService;
+
+    @GetMapping("/sleep")
+    public String sleep(){
+        asyncService.hello();
+        return "sleep";
+    }
+}
+```
+
+测试，转圈三秒才会显示
+
+## 异步
+
+1.在**主程序**开启异步注解
+
+```java
+//开启异步注解
+@EnableAsync
+@SpringBootApplication
+public class AsyncTestApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(AsyncTestApplication.class, args);
+    }
+}
+```
+
+2.在**线程方法**中开启异步注解
+
+```java
+@Async
+    public void hello()  {
+        try {
+            Thread.sleep(3000);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        finally {
+            System.out.println("sleep-3000ms");
+        }
+    }
+```
+
+3.测试
+
+前端瞬间完成，而控制台输出会在3s后才显示
+
+## 定时
+
+两个源码
+
+```java
+TaskExecutionAutoConfiguration
+TaskSchedulingAutoConfiguration
+```
+
+主程序开启注解
+
+```
+//开启定时任务注解
+@EnableScheduling
+@SpringBootApplication
+public class AsyncTestApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(AsyncTestApplication.class, args);
+    }
+
+}
+```
+
+```java
+/*在一个特定的时间执行  ,scheduled注解，
+     使用cron表达式     秒   分  时  日  月  星期
+                       10，15 ： 10和15
+                       0-7   ： 0到7都是
+                       5/20  ： 每二十分钟的第五分钟，即25，45
+                       L ：每个的最后一个
+                        */
+    @Scheduled(cron = "0 * * * * ?")
+    public void onTime(){
+        System.out.println("定时执行方法");
+    }
+}
+```
+
+
+
+## 邮件
+
+1.导入依赖
+
+```xml
+<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+```
+
+2.配置
+
+
+
+# 9.Dubbo+zookeeper
+
+## 架构发展
+
+### 单一应用架构
+
+当网站流量很小时，只需一个应用，将所有功能都部署在一起，以减少部署节点和成本。此时，用于简化增删改查工作量的数据访问框架(ORM)是关键。
+
+> 缺点
+
+- 不便于拓展：所有服无都在一个服务器里，维护只能将全部服务都停掉
+- 吞吐量小：只有一台服务器接受所有请求
+
+### 集群
+
+ ![img](SpringBoot.assets/v2-e628e972ac34b597ba2c1f7f0d326705_720w.jpg) 
+
+ 集群主要描述了一个集合，一些相似的东西，提供相似的功能，这个就叫做集群 。比如同一个业务分布在多个服务器上。单个服务器压力过大，就需要放到多个服务器上减轻压力。
+
+但是多个服务器只能看成多个相同的节点，组合起来相当于一个大的服务器，成为一个集群，**共同执行一个业务**
+
+**交互**：使用**nginx负载均衡**，将请求分配到多个服务器上
+
+>  优点
+
+- **高吞吐量**：利用**负载均衡**，可以接收更多请求。
+- **高可用**：当有一台服务器挂了，还有其他服务器可以用，不会停止服务
+
+
+
+### 分布式
+
+将服务分布在不同的服务器上，相比于集群，**不同服务器负责不同的功能**。
+
+因为业务不同，需要**交互**：不同的服务器之间使用http或者**RPC**沟通
+
+
+
+> 优点
+
+- 资源合理分配（可以给需求量大的业务提供更好的资源，需求量小的分布分配更少资源）
+- 互相独立，便于拓展
+
+
+
+> 集群+分布式
+
+集群和分布式并不冲突。
+
+在分布式的基础上，需求量大的业务可以分散到多个服务器，实现更高的效率
+
+
+
+### 流式计算框架
+
+成立一个注册中心，所有接口在注册中心注册同一调用。注册中心根据流量大小分配管理。
+
+ ![img](https://images2015.cnblogs.com/blog/880309/201705/880309-20170514190347066-1095632262.png) 
+
+
+
+## 解决微服务架构的四个方面
+
+- API 网关（客户端如何访问）
+- RPC框架（服务端如何通信）
+- 服务注册于发现（如何管理这么多服务）
+- 熔断机制（服务器挂了怎么办）
+
+
+
+1. springcloud
+2. dubbo—zookeeper
+
+
+
+## RPC
+
+> 什么是 RPC
+
+Remote Proceduce Call**远程过程调用**    。 是一种技术思想而非一种规范或协议 
+
+**远程**：如果是单片式的，一台电脑上可以调用本地的其他方法，但是分布式在不同的服务器上，需要网络跨越调用
+
+分布式的通信
+
+
+
+- 应用级的服务框架：阿里的 Dubbo/Dubbox、Google gRPC、Spring Boot/Spring Cloud。
+- 远程通信协议：RMI、Socket、SOAP(HTTP XML)、REST(HTTP JSON)。
+- 通信框架：MINA 和 Netty。
+
+ ![img](SpringBoot.assets/fd5b5686336b0a1212398d8ea8fe6f66.jpg-wh_651x-s_3461264051.jpg) 
+
+==核心==：通讯，序列化（传输数据需要转化）
+
+
+
+## Dubbo介绍
+
+一个RPC的框架，用于管理服务器之间的通信
+
+### 流程
+
+![1589251685797](SpringBoot.assets/1589251685797.png)
+
+0. 服务容器负责启动，加载，运行服务提供者。
+
+1. 服务提供者在启动时，向注册中心注册自己提供的服务。
+2. 服务消费者在启动时，向注册中心订阅自己所需的服务。
+3. 注册中心返回服务提供者地址列表给消费者，如果有变更，注册中心将基于长连接推送变更数据给消费者。
+4. 服务消费者，从提供者地址列表中，基于软负载均衡算法，选一台提供者进行调用，如果调用失败，再选另一台调用。
+5. 服务消费者和提供者，在内存中累计调用次数和调用时间，定时每分钟发送一次统计数据到监控中心。
+
+**KFC版**
+
+0. KFC制作汉堡包
+1. 将汉堡包放到在线平台上
+2. 消费者在平台上点汉堡包
+3. 平台给消费者取货码
+4. 消费者去KFC前台拿汉堡包
+5. 会计统计汉堡包点餐次数
+
+
+
+![1589363429621](SpringBoot.assets/1589363429621.png)
+
+
+
+### 优点
+
+- 高性能的RPC通信能力
+- 智能负载均衡
+- 注册中心管理服务器，自动注册与发现
+- 运行流量调控，灰度发布
+
+  
+
+
+
+### zomkepper作为服务中心
+
+安装流程：
+
+1.下载zookeeper(3.55以后的版本使用bin标识的压缩包)
+
+2.打开**bin**文件夹，使用**管理员权限**运行**zkserver.cmd**
+
+3.如果遇到**问题**
+
+​	**闪退**：编辑，在文末加上**pause**
+
+​    再次打开：![1589254730547](SpringBoot.assets/1589254730547.png)
+
+   按照他的路径，发现没有zoo.cfg，复制zoo_sample，改名成zoo.cfg,将文件地址改成
+
+```
+dataDir=D:\\环境\\zookeeper\\data
+dataLogDir=D:\\环境\\zookeeper\\log
+```
+
+   再次运行，虽然卡在端口，但是已经成功开启了
+
+![1589257593562](SpringBoot.assets/1589257593562.png)
+
+4.操作zookeeper
+
+![1589259997417](SpringBoot.assets/1589259997417.png)
+
+### dobbo-admin
+
+​	**一个用于监控和管理的后台**
+
+>  步骤
+
+​    1.下载：在admin主目录打开cmd，输入mvn clean package,在target获得jr包.
+
+​    2.注意，需要先打开zookeeper 的 server服务
+
+​    3.在target目录下打开powershell窗口输入 java -jar   .\dubbo-admin-0.0.1-SNAPSHOT.jar
+
+​	4.访问localhost:7001,账号密码为root
+
+![1589270970827](SpringBoot.assets/1589270970827.png)
+
+## 创建Dubbo
+
+### 步骤
+
+#### 提供者
+
+​	1.导包
+
+```xml
+<!--        dubbo依赖-->
+        <!-- https://mvnrepository.com/artifact/org.apache.dubbo/dubbo-spring-boot-starter -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-spring-boot-starter</artifactId>
+            <version>2.7.3</version>
+        </dependency>
+        <!--        zookeeper 客户端-->
+        <!-- https://mvnrepository.com/artifact/com.github.sgroschupf/zkclient -->
+        <dependency>
+            <groupId>com.github.sgroschupf</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <!--        zookeeper依赖-->
+        <!-- https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.4.14</version>
+            <!--            日志换产生冲突，排除日志-->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>2.12.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+            <version>2.12.0</version>
+        </dependency>
+```
+
+​	2.application.properties配置dubbo信息
+
+```properties
+# 服务器名字
+dubbo.application.name=provider
+# 注册中心的地址
+dubbo.registry.address=zookeeper://127.0.0.1:2181
+# 扫描要注册的包
+dubbo.scan.base-packages=com.example.provider.service
+```
+
+​	3.实现类添加注解
+
+```java
+@Service
+@Component
+public class ProviderServiceImple implements ProviderService {
+```
+
+​	4.添加注解类 **ProviderConfig**（可加可不加）
+
+```java
+@Configuration
+@EnableDubbo(scanBasePackages = "org.example.provider.service")
+@PropertySource("classpath:application.properties")
+public class ProviderConfig {
+}
+```
+
+​	5.打开zookeeper-admin，可以找到注册了
+
+![1589282366838](SpringBoot.assets/1589282366838.png)
+
+![1589282377637](SpringBoot.assets/1589282377637.png)
+
+#### 消费者
+
+​	1.导包
+
+​	2.dubbo消费者的配置
+
+```java
+@Component
+public class CustomerServiceImpl implements CustomerService {
+
+    @Reference
+    private ProviderService providerService;
+
+    @Override
+    public String customer() {
+        return providerService.provide();
+    }
+}
+```
+
+​	3.配置类同消费者
+
+​	4.测试
+
+```
+@SpringBootTest
+class CustomerApplicationTests {
+
+
+    @Autowired
+    CustomerService service;
+
+    @Test
+    void contextLoads() {
+        System.out.println(service.customer());
+        service.customer();
+    }
+
+}
+```
+
+
+
+### 错误
+
+1.org.apache.zookeeper.KeeperException$UnimplementedException
+
+
+
+查看发现有了两个版本的zookeeper，一个3.6.1，一个3.4.14.
+
+删除了3.6.1，提示找不到dubbo，无奈之下，只能重新创建一个新的项目。这次只有3.4.14，就可以跑起来
+
+
+
+2.消费者调用提供者包时空指针
+
+问题：@Reference的注解不是dubbo的注解
+
+解决方法：换成dubbo的注解
+
+
+
+3.Failed to check the status of the service com.example.interfaces.service.ProviderService. No provider available for the service
+
+问题：消费者调用时找不到提供者
+
+解决方法：在配置文件加上一句不检查
+
+```properties
+dubbo.consumer.check=false
+```
+
+
+
+## 问题
+
+1.忘记设置主页
+
+​     **controller  @RequsetMapping("/")**
+
+
+
+2. Circular view path [index]: would dispatch back to the current handler URL [/index] again. Check your ViewResolver setup! (Hint: This may be the result of an unspecified view, due to default view name generation.)  
+
+   没有导入thymeleaf，
+   
+   
+
+2.mybatis的注解不熟练
+
+
+
+3.shiro不熟练
+
+

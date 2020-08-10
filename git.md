@@ -90,7 +90,7 @@ git config --global --list
 
 **SSH公钥存放处**
 
-C:\Users\Barcelona\.ssh
+C:\Users\Barcelona\\.ssh
 
 ```
 $ ssh-keygen -t rsa
