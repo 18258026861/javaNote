@@ -217,7 +217,7 @@ git push origin master  #origin
 
 git pull origin master --allow-unrelated-histories
 
-#强制推送
+#强制推送,不可乱用，会清空提交历史
 git push -u origin master -f 
 ```
 
