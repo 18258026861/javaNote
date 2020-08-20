@@ -822,7 +822,7 @@ mounted(){
 
 先**定义变量**，才能赋值 
 
-```js
+```html
 <body>
 <div id="app">
     <p>{{info.name}}</p>

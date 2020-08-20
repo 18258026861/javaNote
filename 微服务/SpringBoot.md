@@ -1648,10 +1648,6 @@ spring:
 
 
 
-### 404
-
-
-
 ![1588693443697](SpringBoot.assets/1588693443697.png)
 
 
@@ -2239,6 +2235,7 @@ apach shiro是一个Java的安全框架
 　>  架构
 
 ![在这里插入图片描述](SpringBoot.assets/20181205211620525.png)
+
 **Subject**：主体，可以看到主体可以是任何可以与应用交互的“用户”；
 **SecurityManager** ： 相 当 于 SpringMVC 中 的 DispatcherServlet ,是 Shiro 的心脏；所有具体的交互都通过 		SecurityManager 进行控制；它管理着所有 Subject、且负责进行认证和授权、及会话、缓存的管理。
 **Authenticator**：认证器，负责主体认证的，这是一个扩展点，如果用户觉得 Shiro 默认的不好，可以自定义实		现；其需要认证策略（Authentication Strategy），即什么情况下算用户认证通过了；
@@ -2450,7 +2447,7 @@ public class realm extends AuthorizingRealm {
 }
 ```
 
-​	**shiroConfig**： ==顺序==是先realm，再manager，再factorybean
+​	**shiroConfig**： ==顺序==是先realm，再manager，再ShiroFilterFactoryBean
 
 ```java
 @Configuration
@@ -2733,7 +2730,7 @@ shiro的具体执行流程：
 
 3.**DefaultWebSecurityManager**会**关联realm**和**ShiroFilterFactoryBean**
 
-​			**具体操作**：setRealm(realm) ：获取realm的数据
+​			**具体操作**：setRealm(realm) ：manager获取realm的数据
 
 4.**ShiroFilterFactoryBean**设置资源**权限**，设置登录和未授权**跳转页面**
 
@@ -2789,8 +2786,29 @@ Subject subject = SecurityUtils.getSubject();
         bean.setSecurityManager(manager);
 //      设置登录页面路径
         bean.setLoginUrl("/admin/tologin");
-
 ```
+
+## 问题
+
+1.忘记设置主页
+
+​     **controller  @RequsetMapping("/")**
+
+
+
+2. Circular view path [index]: would dispatch back to the current handler URL [/index] again. Check your ViewResolver setup! (Hint: This may be the result of an unspecified view, due to default view name generation.)  
+
+   没有导入thymeleaf，
+   
+   
+
+2.mybatis的注解不熟练
+
+
+
+3.shiro不熟练
+
+
 
 
 
@@ -3067,6 +3085,7 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2).groupName("Y2Y");
     }
 ```
+
 
 测试
 
@@ -3613,26 +3632,5 @@ class CustomerApplicationTests {
 dubbo.consumer.check=false
 ```
 
-
-
-## 问题
-
-1.忘记设置主页
-
-​     **controller  @RequsetMapping("/")**
-
-
-
-2. Circular view path [index]: would dispatch back to the current handler URL [/index] again. Check your ViewResolver setup! (Hint: This may be the result of an unspecified view, due to default view name generation.)  
-
-   没有导入thymeleaf，
-   
-   
-
-2.mybatis的注解不熟练
-
-
-
-3.shiro不熟练
 
 

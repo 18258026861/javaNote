@@ -893,7 +893,7 @@ let parse = JSON.parse(json);
 
 **前端**
 
-```jsp
+```html
 <%--
   Created by IntelliJ IDEA.
   User: Barcelona
@@ -960,7 +960,7 @@ let parse = JSON.parse(json);
 
 **ajaxlogin.jsp**
 
-```jsp
+```html
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
 <head>
