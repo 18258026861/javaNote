@@ -157,8 +157,107 @@ Redis支持**主从同步**。数据可以从主服务器向任意数量的从�
 5、对于给定key，比较容易映射复杂值的环境
 
 
+# 语句
+
+## key键命令
+### keys
+查看所有key值的value
+`keys *`
+![20200824171325](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824171325.png)
+
+### del
+删除key命令，如果存在该key，就返回1，不存在就返回0
+`del key`
+如图，存在key-name，删除成功返回1，不存在key-yy，删除失败返回0
+![20200824103328](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824103328.png)
+
+### exists
+判断key是否存在,存在返回1，不存在返回0
+`exists key`
+![20200824104922](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824104922.png) 
+
+### 设置过期时间
+给定key设置过期时间 
+过期之后，key不存在
+- pexpire
+单位毫秒
+`pexpire key time`
+
+- expire
+单位秒
+`expire key time`
+
+- ttl
+查看key还有多少秒过期
+`ttl key`
 
 
+### type
+查看key的值的类型
+`type key`
+![20200824170943](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824170943.png)
+
+
+## 字符串命令
+- **set**
+  设置k-v
+
+  ```bash
+  set key value
+    设置name的值为"yzy"
+  set name "yzy"
+  ```
+  ![20200824102059](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824102059.png)
+- **get**
+  根据key获取value
+
+  ```bash
+  get key
+  获取name的值
+  get name
+  ```
+- **getset**
+  将key存储的值改成newValue，并返回oldValue
+  **如果没有key，返回nil**
+  `getset key newValue`
+  `return oldValue`
+
+  ![20200824174324](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824174324.png)
+- **append**
+  指定key的value后面加上value，**返回添加后的总长度**
+  `append key value`
+
+-  **getrange**
+  获取指定key的子字符串,从start-end
+  `getrange key start end`
+  ![20200824172316](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824172316.png)
+
+- **mget**
+  返回一个或多个key的值
+  `mget key1 key2 ....`
+  ![20200824174904](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824174904.png)
+
+- **mset**
+  设置多个key的值，如果已存在就覆盖
+  `mset key1 value1 key2 value2 ....`
+  ![20200824175052](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824175052.png)
+
+- **msetnx**
+  设置多个key的值，当且仅当**key都不存在**
+  **原子性**，当一个不成立，全部都不执行
+  `msetnx key1 value1 key2 value2 ....`
+  ![20200824175702](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824175702.png)
+
+- **decr/incr**
+  使key存储的值-1/+1
+  `decr/incr key`
+
+
+- **decrby/incrby**
+  使key存储的值-/+指定的值
+  `decrby/incrby key value`
+  ![20200824173530](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200824173530.png)
+  
 
 # 安装和下载
 
@@ -252,10 +351,15 @@ ps -aux|grep redis| grep -v grep
 
 2.解压缩
 
-3.打开redis-server
+3.打开redis-server（powershell下与linux相同，为.\redis-server）
 
 ![image-20200810143205258](Redis.assets/image-20200810143205258.png)
 
+4.如果想使用指定的配置文件，就在启动命令后面加上配置文件名
+
+例如，指定的配置文件为redis.windows.conf
+
+`.\redis-server redis.windows.conf` 
 
 
 
