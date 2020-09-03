@@ -688,6 +688,8 @@ brpoplpush list1 list2 22   #22秒内阻塞或可弹出
 ```
 
 ## set
+**微信小程序抽奖**：点击加入抽奖，查看所有抽奖用户，随机选取一个用户
+
 set的元素是不可重复的
 ### 添加
 ```bash 
@@ -1320,7 +1322,7 @@ redis客户客户端可以订阅任意数量的频道
 ```bash
 127.0.0.1:6379> info replication            #查看当前库的信息
 # Replication
-role:master                                       #角色，主机
+role:master                                           #角色，主机
 connected_slaves:0                                    #从机数量：0
 master_replid:053c94da448e85be438ba8a29be8d42d71531cfb
 master_replid2:0000000000000000000000000000000000000000
@@ -1332,6 +1334,185 @@ repl_backlog_first_byte_offset:0
 repl_backlog_histlen:0
 
 ```
+
+如果想要创建多个redis服务器，就需要多个配置文件
+
+1.复制配置文件并改名，修改里面的配置
+```bash
+port改成相对应的端口6379 6380 6381
+dbfilename dump79.rdb  dump80.rdb dump81.rdb
+pidfile redis_79.pid redis_80.pid redis_81.pid
+logfile "redis79.log" "redis80.log" "redis81.log"
+```
+
+启动服务器并查看
+
+![20200902104248](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902104248.png)
+
+## 设置主机
+1.通过命令，是暂时的，关闭server就会消失`SLAVEOF 127.0.0.1 6379`，但是如果主机端需要密码就不能连接成功
+
+![20200902114936](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902114936.png)
+
+2.通过配置文件
+
+![20200902122747](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902122747.png)
+
+从机端
+
+![20200902122844](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902122844.png)
+
+主机端
+
+![20200902122915](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902122915.png)
+
+
+主机能写入，从机只能读取，主机中写入k1,v1  那么在从机中可以读取到
+
+![20200902123343](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902123343.png)
+
+即使主机断开时，从机的`master_link_status:down`断开，从机仍然是个从机，不能进行写操作。当主机上线，从机会立即获取主机的数据。从机断开再连接是一样的
+
+### 复制原理
+#### 全量复制：
+1.slave连接到master之后会**发送一个sync同步命令**
+
+2.master接收到同步命令，**执行bgsave命令生成快照文件**，并在**缓存区中记录**所有此后的**写命令**
+
+4.master执行完bgsave后**将快照发送给所有slave**，slave**接受到快照用来替代原有的数据**。
+
+5.master发送完快照，再将缓存区的**所有命令发送给slave**。slave完成所有写米光临，开始接收读命令
+
+#### 增量复制：
+slave正常启动后，主服务器的所有写操作同步到从服务器中
+
+#### 执行策略
+主从刚刚连接，执行全量同步。结束后执行增量同步。全量同步在任何时候都可以进行。当增量同步失败后，会执行全量同步
+当
+
+# 哨兵模式
+当主机断开，从服务器可以使用`slaveof no one`使自己成为主机，让其他从服务器连接到自己。原来的主机恢复后，就重新连接
+ 
+哨兵模式就是上面手动的**自动化版**。能够**后台监控主机是否发生故障**，根据投票数**自动将从库转换为主库**。
+
+哨兵是一个**独立的进程**，通过发送命令，等待redis服务器响应来判断redis是否发生故障
+
+![20200902162511](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902162511.png)
+
+**多哨兵模式**：一个哨兵也可能发生故障，可以设置多个哨兵互相监控来使系统更加稳定
+
+![20200902163033](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902163033.png)
+
+**多哨兵运行原理**：
+当一个哨兵检测到master下线时，并不会马上切换主机，而是等多数哨兵也发现了主机下线，就会发起投票，将一台slave切换成master并发布订阅通知其他slave。
+
+>作用
+- 通过发送命令，让服务器返回其运行状态来**监控服务器的运行情况**
+- 当检测到master宕机，会**自动将一个slave切换成maste**r，并**发布订阅**通知其他slave修改配置文件切换主机
+
+## 配置
+创建一个sentinel.conf文件用于配置哨兵的信息，**如果设置了密码，还需要添加密码**
+
+sential monitor 被监控的名称 ip地址 端口号 几票就能认为主机挂了
+`sentinel monitor myredis 127.0.0.1 6379 1`
+`sentinel auth-pass myredis 665128`
+
+```bash
+protected-mode no       #关闭保护模式      
+
+port 26479                    #端口   
+
+daemonize yes             #使用后台模式启动          
+
+pidfile "/var/run/redis-sentinel_26479pid"               #进程id文件      
+
+logfile "/usr/local/redis/sentinel/sentinel_26479.log"      #日志文件   
+
+dir "/usr/local/redis/sentinel" 　　　　　　　　　　　　　　#工作目录
+
+#         核心配置
+
+sentinel monitor <master-name> <ip> <port> <quorum>
+master-name：#  redis主节点昵称。
+ip：#redis主机ip。
+port：#redis主机端口。
+quorum：#哨兵判断主节点是否发生故障的票数。如果设置为2，表示2个哨兵节点认为主节点发生了故障，一般设置为：哨兵节点数/2+1。
+
+
+sentinel down-after-milliseconds <master-name> <times>
+#哨兵会定期的向redis节点发送ping命令来判断redis是否可达，若超过指定的times毫秒内还未得到pong回复，则判读该redis不可达。
+
+
+sentinel parallel-syncs <master-name> <nums>
+#当redis主节点挂了后，哨兵会选出新的master，此时，剩余的slave会向新的master发起同步数据，这个设置表示允许并行同步的slave个数。
+
+sentinel failover-timeout <master-name>  <times>
+#进行故障转移时，如果超过设置的times毫秒，表示故障转移失败。
+
+sentinel auth-pass <master-name> <password>
+#如果redis主节点设置了密码，则需要进行这个配置。
+```
+
+
+
+## 步骤
+启动哨兵
+`./redis-sentinel sentinel.conf`
+
+![20200902170640](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902170640.png)
+
+当断开主机后，过一会哨兵就会显示，最后切换到了6381
+
+![20200902170833](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902170833.png)
+
+6381中输入`info replication`查看，变成了主机
+
+![20200902170946](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902170946.png)
+
+如果主机回来了，也只能当现在主机的从机
+
+![20200902172913](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200902172913.png)
+
+
+## 优缺点
+优点
+- 哨兵集群，基于主从复制
+- 主从转换，故障转移，可用性更好
+- 主从模式的升级版，从手动到自动
+
+缺点
+- redis不好扩容，容量到达上线，扩容十分麻烦
+- 哨兵模式的配置非常麻烦
+
+
+# 缓存穿透和雪崩
+## 缓存穿透
+当用户查询一个数据，在redis数据库中没有，也就是缓存没有命中，于是去持久层数据库查询。发现也没有，于是本次查询失败。当这种查询很多时，都去持久层数据库查询，会给数据库造成很大的压力，相当于穿透了缓存
+
+> 解决方法
+
+**布隆过滤器**
+
+
+## 缓存击穿
+缓存击穿是指一个key热点非常高，不断扛着高并发，集中对着这个点进行访问，比如微薄热搜。当key刚失效时，大并发就穿破缓存直接访问数据库。
+
+> 解决方法
+
+**设置热点不过期**：但是这个方法很消耗内存空间，毕竟不知道这个key会不会成为热点
+
+**加互斥锁**：使用分布式锁，保证每个可以同时只有一个线程去查询后端数据，其他线程没有权限查询。即流量限制，削峰
+
+## 缓存雪崩
+指在某一段时间内，缓存集中过期。此时所有访问都会进入数据库访问，压垮数据库。
+
+> 解决方法
+
+为key设置不同的缓存时间，分散集中过期大量访问数据库的压力
+
+**搭建集群**：当其中某些服务器挂掉，就会使用其他服务器
+
+
 
 # 安装和启动
 

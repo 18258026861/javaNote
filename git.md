@@ -211,11 +211,17 @@ $ git remote -v
 # origin是别名，有多个远程仓库可以选择别名上传
 git push origin master  #origin 
 
+#将本地study分支提交到远程origin的study分支
+git push origin study:study
+
+
 # push中出现问题refusing to merge unrelated histories
 
 #这是因为远程仓库已经存在代码记录了，并且那部分代码没有和本地仓库进行关联，我们可以使用如下操作允许pull未关联的远程仓库旧代码：
 
 git pull origin master --allow-unrelated-histories
+
+成功pull之后，再push
 
 #强制推送,不可乱用，会清空提交历史
 git push -u origin master -f 
