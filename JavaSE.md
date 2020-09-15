@@ -4019,6 +4019,7 @@ public boolean remove(Object o) {
 E unlink(Node<E> x) {
         //取出该元素和
         final E element = x.item;
+    
         final Node<E> next = x.next;
         final Node<E> prev = x.prev;
 		//前链接部分

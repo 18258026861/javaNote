@@ -5,7 +5,9 @@
 - 内置拦截插件
 
 # 快速入门
+
 ## 导入依赖
+
 ```xml
 <dependency>
         <groupId>com.baomidou</groupId>
@@ -26,8 +28,6 @@ spring.datasource.url=jdbc:mysql://localhost:3306/mybatisplus?useUnicode=true&ch
 2.启动项开启注解扫描
 @MapperScan(mapper所在的包 )
 
-
-## pojo
 ## dao
 这里是dao层，所以要**加@component注解**
 继承自带简单CURD
@@ -54,7 +54,7 @@ public interface UserMapper extends BaseMapper< User > {
 
 ## 配置日志
 
-由于我们的sql语句都隐藏了，所以需要通过日志来查看操作
+由于我们的sql语句都隐藏了，所以需要通过日志来查看操作，在application配置文件中添加
 ```properties
 #配置日志
 mybatis-plus.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
@@ -422,6 +422,7 @@ mybatis-plus.global-config.db-config.logic-not-delete-value=0
   - notLike
 
 - isNull
+  
   - isNotNull
 - insql   子查询sql     
   - `insql("id","select id from user where age = 22")`--->`and id in (select id from user where age = 22)`
@@ -430,8 +431,6 @@ mybatis-plus.global-config.db-config.logic-not-delete-value=0
   - `orderBy(boolean condition, boolean isAsc, R... columns)`
   - orderByAsc
   - orderByDesc
-
-  ### [#](https://baomidou.com/guide/wrapper.html#likeright)likeRight
 
 ```java
         QueryWrapper< User > userQueryWrapper = new QueryWrapper<>();

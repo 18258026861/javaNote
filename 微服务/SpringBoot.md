@@ -139,8 +139,6 @@ public class Contreoller {
 
 
 
-# 
-
 # 1.自动装配
 
 ## 依赖
@@ -2787,6 +2785,363 @@ Subject subject = SecurityUtils.getSubject();
 //      设置登录页面路径
         bean.setLoginUrl("/admin/tologin");
 ```
+
+## JWT
+>JSON Web Token (JWT)是一个开放标准(RFC 7519)，它定义了一种紧凑的、自包含的方式，用于作为JSON对象在各方之间安全地传输信息。该信息可以被验证和信任，因为它是数字签名的。
+
+Json Web Token ,通过JSON形式作为Web应用的令牌，多方交互时需要通过这个令牌进行**授权**才能访问。
+也可以对信息进行加密来**信息交换**防止被篡改。
+
+### 为什么使用它
+#### 传统的Session认证
+认证通过，将用户信息存入服务器的Session中，并将sessionid存放到浏览器的cookie当中。
+
+当用户再次请求，会携带cookie，通过sessionid找到服务器中自己的 session信息。来进行验证是否登录。
+
+![20200912195917](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200912195917.png)
+
+#### Session的弊端
+- 每个用户认证都会在服务器存放对应的session，随着用户增多，**服务器开销增大**
+- session存放在一台服务器中，当下次请求时，还需要访问者一台服务器才恩那个成功，这样就会限制分布式的能力，**减弱了负载均衡**
+- cookie被拦截，容易造成伪造cookie攻击
+- **前后端分离**情况下更加复杂：
+  - **用户一次请求要转发多次，每次都要携带sessionid**，每次都要验证，增加服务器的负担
+
+#### 基于JWT
+![20200912201158](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200912201158.png)
+
+**认证流程**
+
+1.前端通过Web表单将自己的用户名和密码发送到后端的接口。一般使用post请求或者SSL加密传输
+
+2.后端核对用户名和密码成功后，将用户的id等信息作为JWT Payload（负载），将其与头部分别进行Base64编码拼接后签名，形成JWT。  ** token的格式**：head.payload.singurature
+
+3.后端将JWT作为登录成功的结果返回给前端，前端将结果保存在浏览器中localStorage,退出登录时前端删除JWT
+
+4.前端每次请求将JWT放入HTTP Header中的Authorization位，解决伪造攻击
+
+5.后端检查JWT是否过期，检查签名是否正确，检查Token是否发送给自己。
+
+6.验证通过，后端使用JWT中的用户信息来进行业务操作，并返回结果
+
+#### 优点
+- 简介：可以通过post参数或者http header发送，数据量小，传输速度快
+- 自包含：负载中包含了所有用户所需的信息，避免多次查询数据库
+- 以JSON加密的形式保存在客户端，因此JWT是跨语言，任何web形式都支持
+- 不需要在服务端保存会话信息，特别适用于分布式微服务
+
+### 结构
+**1.令牌组成**
+
+token 的**格式**:xxxx.yyyy..zzzz
+
+**内容**为：header.payload.singnature
+
+
+- **header标头**
+  - 标头通常由两部分组成：令牌的类型和所使用的签名算法
+  - 经过Base64编码后就会变成JWT格式的第一部分xxxx
+  
+    ```javascript
+    {
+        //使用的加密方式为HS256
+            "alg" : "HS256",
+            //使用的令牌类型为JWT
+            "typ" : "JWT" 
+    }
+    ```
+- **Payload有效载荷**
+  - 自包含，包含声明。声明是有关实体（通常是用户）和其他数据的声明
+  - 同样会Bse64编码处理，变成JWT格式的第二部分yyyy
+  - 由于**Base64不是加密，而是编码**，所以如果被拦截通过解码就能获得全部用户信息，官方建议不**要放置用户的敏感信息如密码**
+
+    ```javascript
+        {
+            "sub" : "123456",
+            "name" : "yzy",
+            "admin" : true
+        }
+    ```
+- **Singature签名**
+  - 签名需要使用编码后的**header和payload**以及后端提供的一个**密钥**，通过header指定的**加密算法进行签名**，作用是**保证JWT没有被篡改**
+    - header指定了加密算法：**HS256**
+    - 已知编码后的header和payload：**xxxx.yyyy**
+    - 后端提供密钥  **secret**
+    - 进行**加密**：**Signatrue** = HMACSHA256(xxxx+"."+yyyy,secret)
+  - 后端如何进行验证：获得JWT中的xxxx.yyyy与后端自己的密钥进行加密然后和JWT的zzzz进行对比是否相同
+    - 当JWT被篡改时，无论xxxx,yyyy,zzzz的哪一部分发生改变，都不能验证通过
+
+**编码前**
+
+![20200913110218](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200913110218.png)
+
+**编码后**
+
+![20200913110303](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200913110303.png)
+
+### 使用
+**1.导入依赖**
+
+```xml
+<dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.4.0</version>
+        </dependency>
+```
+
+**2.手动模拟一个token的生成**
+
+```java
+Calendar instance = Calendar.getInstance();
+        instance.add(Calendar.SECOND,20);           //设置20秒的时间
+
+        String token = JWT.create().withClaim("username", "yy")   //设置payload的内容.可以有多个
+                .withClaim("id", "yy")
+                .withExpiresAt(instance.getTime()) //指定令牌过期时间
+                .sign(Algorithm.HMAC256("1231231"));//设置签名
+
+        System.out.println(token);
+```
+
+![20200913140910](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200913140910.png)
+
+**3.令牌的认证**
+```java
+JWTVerifier verifier = JWT.require(Algorithm.HMAC256("1231231")).build();   //创建一个相同算法的解密对象
+        /*模拟前端的话就是将前端传过来的token让解密对象进行解码*/
+        //解码token获得一个包含信息的对象
+        DecodedJWT verify = verifier.verify("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6Inl5MSIsImV4cCI6MTU5OTk3OTM4OCwidXNlcm5hbWUiOiJ5eSJ9.iQnJ4JnwEGWDEPYzrk-f_Rq8LCqPetm7kYYeAdoUweY");
+        //对象中可以获取载体中的信息,此时是对象名,如果想要获得具体信息,可以.asString
+        System.out.println(verify.getClaim("username"));
+        System.out.println(verify.getClaim("id"));
+```
+
+
+**异常**
+
+![20200913143027](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20200913143027.png)
+
+异常的次序：
+- 1.算法匹配（与生成JWT的算法不同）
+- 2.验证签名（与生成JWT的签名不同）
+- 3.过期时间（超时）
+- 4.失效的JWT（JWT信息不对）
+
+### JWT整合spingboot+redis
+#### controller
+将生成token写入登录的controller中并且存入redis
+```java
+@ResponseBody
+    @PostMapping("/login")
+    /*认证生成token*/
+    public HashMap< String, Object > login(String username,String password){
+        HashMap< String, String > map = new HashMap<>();
+        HashMap< String, Object > map1 = new HashMap<>();
+        try {
+            User user = loginSercice.loginSuccess(username, password);
+            if (user != null) {
+                //将用户名和密码存放map,用于生成搭载信息的token,注意,不要放密码进去!
+                map.put("id", user.getId());
+                map.put("username", user.getUsername());
+                String token = JWTUtil.create(map);
+                map1.put("status",200);
+                map1.put("token",token);
+                return map1;
+            }
+        }catch (Exception e){
+                map1.put("status",500);
+        }
+        return map1;
+    }
+```
+#### 拦截器
+将**验证token**写进**handler拦截器**中，除了登录功能，其他功能都会被拦截检查token
+
+token 存放在request的请求头中，所以可以通过`request.getHeader("token")`来获取token
+```java
+@Component
+public class JWTHandler implements HandlerInterceptor {
+
+    @Autowired
+    public RedisUtil redisUtil;
+
+    /*这部分相当于验证token的功能*/
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+
+        HashMap< String, Object > map = new HashMap<>();
+
+        //获得token
+        String token = request.getHeader("token");
+        try{
+            JWTUtil.verify(token);  //验证令牌
+            //当数据库中的token没有过期且与前端传来的token相同
+
+            if(StringUtils.equals(redisUtil.get("token"),token)){
+                map.put("message","不拦截");
+                return true;
+            }else {
+                map.put("error","登录超时,请重新登录");
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            map.put("message","没有登录,请重新登录");
+        }
+        map.put("status",false);
+        //将map转换为json
+        String json = new ObjectMapper().writeValueAsString(map);
+        //设置response的格式为json   比那与前后端
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().println(json);
+            return false;
+    }
+}
+
+```
+
+#### 拦截器部署
+别忘了将拦截器应用到webMVC中
+
+并将除了登录生成token的**其他所有的访问路径纳入拦截器的范围**
+
+那么每次访问请求路径都会经过拦截器来校验。
+```java
+@Configuration
+public class InterceptorConfig implements WebMvcConfigurer {
+
+    /*问题由来：在拦截器中无法读取redis的内容
+    *   原因：拦截器在context运行之前就加载了，所以我们要先把JWTHandler实例化出来，能够运行，然后再放入WebMvc当中拦截 */
+    @Bean
+    public JWTHandler getHandler(){
+        return new JWTHandler();
+    }
+
+    /*将JWT拦截器生效*/
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        //配置了JWT的拦截器,需要将它放到webmvc的拦截器配置中才会生效
+        registry.addInterceptor(getHandler())
+                //将login下除了login的其他所有请求纳入拦截器的范围内
+                .addPathPatterns("/login/**")
+                .excludePathPatterns("/login/login");
+    }
+}
+```
+
+#### JWT工具类
+```java
+@Component
+public class JWTUtil {
+
+    //密钥
+    private static final String SING = "ASDWAR@";
+
+    /*
+     * 功能描述: <br>
+     * 创建Token
+     * @Param: [map]
+     * @Return: java.lang.String
+     *
+     * @Author: Barcelona
+     * @Date: 2020/9/13 15:26
+     */
+    public static String create(Map< String, String > map) {
+        Calendar instance = Calendar.getInstance();
+        instance.add(Calendar.DATE, 3);           //设置3天的时间,可以设置单位
+
+        //创建JWT生成对象 builder
+        JWTCreator.Builder builder = JWT.create();
+
+        //将参数map中的信息传入
+        map.forEach((k, v) -> {
+            builder.withClaim(k, v);
+        });
+        //生成token
+        String token = builder.withExpiresAt(instance.getTime()).sign(Algorithm.HMAC256(SING));
+
+        return token;
+    }
+
+    /*
+     * 功能描述: <br>
+     * 信息合法性和获取信息
+     * @Param: [token]
+     * @Return: void
+     *
+     * @Author: Barcelona
+     * @Date: 2020/9/13 15:29
+     */
+    public static DecodedJWT verify(String token) {
+        DecodedJWT verify = JWT.require(Algorithm.HMAC256(SING)).build().verify(token);
+        return verify;
+    }
+
+    /*
+     * 功能描述: <br>
+     * 获取token中的username信息
+     * @Param: [token]
+     * @Return: java.lang.String
+     *
+     * @Author: Barcelona
+     * @Date: 2020/9/14 9:45
+     */
+    public static String getUsername(String token){
+        DecodedJWT verify = verify(token);
+        String username = verify.getClaim("usrname").asString();
+        return username;
+
+    }
+/*
+ * 功能描述: <br>
+ * 通过token获取用户的id
+ * @Param: [token]
+ * @Return: java.lang.String
+ *
+ * @Author: Barcelona
+ * @Date: 2020/9/14 10:35
+ */
+    public static String getId(String token){
+        DecodedJWT verify = verify(token);
+        String id = verify.getClaim("id").asString();
+        return id;
+    }
+}
+```
+
+### 出现的问题
+当登录后，在**拦截器中读取redis**的值与token进行对比时，出现redis读取的值**为null**。
+
+查找得知，拦截器在springcontext之前就加载了，即**实例化在@Bean之前执行**，那么当拦截器运行，redisTemplate实际上是注入失败的（无法进行读取操作）
+
+原来出现问题的代码
+```java
+@Override
+    public void addInterceptors(InterceptorRegistry registry) {
+
+        registry.addInterceptor(new JWTHandler())
+                .addPathPatterns("/login/**")
+                .excludePathPatterns("/login/login");
+    }
+```
+所以我们要**先实例化拦截器**，再将拦截器配置进去
+```java
+@Bean
+    public JWTHandler getHandler(){
+        return new JWTHandler();
+    }
+    
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        
+        //调用实例化的方法
+        registry.addInterceptor(getHandler())
+                .addPathPatterns("/login/**")
+                .excludePathPatterns("/login/login");
+    }
+```
+
+
 
 ## 问题
 
