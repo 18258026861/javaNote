@@ -1,0 +1,269 @@
+# 自动生成代码
+
+## 1.创建数据库表
+
+## 2.使用项目的代码生成
+
+![image-20200923165720813](jeesite.assets/image-20200923165720813.png)
+
+### 1.业务表添加
+
+生成表的实体类
+
+**选择要生成的表**
+
+![image-20200923170421952](jeesite.assets/image-20200923170421952.png)
+
+
+
+**编辑生成实体类的信息**
+
+![image-20200923170503642](jeesite.assets/image-20200923170503642.png)
+
+l 表名：物理表表名
+
+l 说明：物理表表描述
+
+l 类名：生成表关联的实体类名称
+
+l 父表表名：关联父表的表名，外键：当前表关联父表的主键，如果当前表为子表，需在此指定父表及外键。外键字段需在字段列表中手动设置属性名（对象.主键，例如：将userId修改为user.id）
+
+l 列名：数据表定义的字段名称
+
+l 说明：数据表定义的字段注释
+
+l 物理类型：数据表定义字段类型
+
+l Java类型：实体对象的属性字段类型
+
+l Java属性名称：实体对象的属性字段（对象名.属性名|属性名2|属性名3，例如：用户user.id|name|loginName，属性名2和属性名3为Join时关联查询的字段）
+
+l 主键：是否是主键字段
+
+l 可空：该字段是否可为空
+
+l 插入：是否是插入字段，如果是则包含在insert语句里
+
+l 编辑：是否是编辑字段，如果是则包含在update语句里
+
+l 列表：是否是列表查询，如果是则包含在列表页的表格列里。
+
+l 查询：是否是查询字段，如果是则包含在查询页的查询列表里。
+
+l 查询方式：查询字段的查询方式，也就是where后的条件表达式，如：字段1=字段2  AND  字段3>字段4  AND  字段5 !=字段6。
+
+l 字段生成方案：表单中字段生成的样式，如：input，select，treeselect，areatext等等
+
+l 字典类型：如果字段生成方案为：下拉框、复选框、单选框，则该字段必须指定一个字典类型，字典类型为字段管理中的字典类型。
+
+l 排序：字段生成的先后顺序，升序。
+
+
+
+### 2.业务方案添加
+
+生成表的逻辑操作，dao层，service层，conroller层，jsp页面，mapper文件
+
+**每个表都要添加**，
+
+如果是主子表，就主表选择增删改查（单表）
+
+（不需要，全部都是单表）如果是子表，就选择一对多
+
+
+
+![image-20200923171343724](jeesite.assets/image-20200923171343724.png)
+
+![image-20200923173142445](jeesite.assets/image-20200923173142445.png)
+
+
+
+## 3.菜单添加
+
+添加导航栏上的菜单
+
+![image-20200923173301313](jeesite.assets/image-20200923173301313.png)
+
+
+
+**添加子菜单**
+
+![image-20200923173924113](jeesite.assets/image-20200923173924113.png)
+
+
+
+# 查询
+
+**以司机的查询为例**
+
+- 名称like（自带）
+- 所属车站 （以这个为例子）
+- 隶属关系
+- 驾照类型
+
+## 1.controller跳转
+
+想要通过查询车站获取司机，就需要获得所有车站的名称放到下拉框中供用户选择，那么需要**在controller增加获取所有车站信息**
+
+```java
+@RequiresPermissions("bus:busDriver:view")
+	@RequestMapping(value = {"list", ""})
+	public String list(BusDriver busDriver, HttpServletRequest request, HttpServletResponse response, Model model) {
+		Page<BusDriver> page = busDriverService.findPage(new Page<BusDriver>(request, response), busDriver);
+        //-----------------------------这一句--------------------------------
+		List< BusStation > station = busStationService.findList(new BusStation());
+		model.addAttribute("page", page);
+		model.addAttribute("station", station);
+		return "modules/bus/busDriverList";
+	}
+```
+
+> 为什么**查询所有车站信息还要参数**呢，不是应该无参数吗？
+
+把条件查询和全部查询合二为一，当条件参数为空时，即全部查询。
+
+
+
+## 2.jsp页面
+
+既然已经在controller跳转页面中携带了车站信息，就需要将他们循环显示在下拉框中
+
+```jsp
+<li>
+   <label>所属车站：</label>
+   <select name="busStationId" >
+       <option value="">= 选择车站 =</option>
+      <c:forEach items="${station}" var="station">
+         <option value="${station.id}" > ${station.name}</option>
+      </c:forEach>
+   </select>
+</li>
+```
+
+forEach循环写在select标签中，var表示别名。${station.name}不要忘记（显示的值），否则会是空白
+
+那么点击车站名称选定bus_station_id就完成了
+
+
+
+## 3.controller查询
+
+前面说了controller无参有参的方法合二为一，那么就将参数传进了findList中
+
+
+
+## 4.实现service方法
+
+那么接下来实现该方法，找到对应的mapper文件
+
+原本已经实现了名称的模糊查询
+
+```xml
+			<if test="name != null and name != ''">
+				AND a.name LIKE
+					<if test="dbName == 'oracle'">'%'||#{name}||'%'</if>
+					<if test="dbName == 'mssql'">'%'+#{name}+'%'</if>
+					<if test="dbName == 'mysql'">concat('%',#{name},'%')</if>
+			</if>
+```
+
+
+
+我们自己写通过车站id的查询（AND不要忘记）
+
+```xml
+			<if test="busStationId != null and busStationId != ''">
+				AND a.bus_station_id = #{busStationId}
+			</if>
+```
+
+
+
+# 解决方法
+
+## 1.从后端传来的能够选定下拉框中对应的选项
+
+如果是遍历循环，则只需要加入一句
+
+```jsp
+<c:if test="${station.id==busSecurityCheck.busStationId }">selected="selected"</c:if>
+```
+
+但是如果是自定义的，就需要在每个选项中都要写
+
+```jsp
+				<form:select name="type" path="type" >
+						<%--					在开头要加上一个默认值--%>
+					<option value="">=选择驾照类型=</option>
+					<option value="A1" <c:if test="${'A1'==busDriver.type }">selected="selected"</c:if>>A1</option>
+					<option value="A2" <c:if test="${busDriver.type=='A2'}">selected="selected"</c:if>>A2</option>
+					<option value="A3" <c:if test="${'A3'==busDriver.type}">selected="selected"</c:if>>A3</option>
+					<option value="B1"  <c:if test="${'B1'==busDriver.type}">selected="selected"</c:if>>B1</option>
+					<option value="B2" <c:if test="${'B2'==busDriver.type}">selected="selected"</c:if>>B2</option>
+					<option value="C1" <c:if test="${'C1'==busDriver.type}">selected="selected"</c:if>>C1</option>
+					<option value="C2" <c:if test="${'C2'==busDriver.type}">selected="selected"</c:if>>C2</option>
+				</form:select>
+```
+
+
+
+## 2.时间格式
+
+只想获得日期或者月份，不需要时间
+
+
+
+# 问题
+
+1.**Unknown system variable 'tx_read_only'**
+
+驱动包问题，驱动包的版本太低，更换成数据库版本对应的驱动版本
+
+
+
+2.**外置tomcat乱码**
+
+如果是��Ϣ，logging中的不要改成GBK，只要在tomcat配置中加入`-Dfile.encoding=UTF-8`
+
+![image-20200923100128824](jeesite.assets/image-20200923100128824.png)
+
+
+
+3.***ava.sql.SQLException:Could* *not* *retrieve* *transation* *read-only* *status* *server*这个错误是无法检索只读服务**
+
+我的mysql的版本是8.0 ，而驱动是5.1，需要将驱动版本换成8.0.19
+
+
+
+4.**使用maven的tomcat**
+
+command line用tomcat7（添加了7和6的tomcat依赖）：run
+
+![image-20200923112600932](jeesite.assets/image-20200923112600932.png)
+
+
+
+5.**tomcat 启动时报错illegal xxx**
+
+maven clean ，maven install再启动tomcat
+
+设置tomcat为**clean romcat：run**
+
+![image-20200925144156593](jeesite.assets/image-20200925144156593.png)
+
+
+
+6.**Connection is read-only. Queries leading to data modification are not allowed**
+
+自己写的dao方法，**没有加上**允许事务不可只读**注解**，要在**dao和service都加上注解**
+
+@Transactional(readOnly = false)
+
+
+
+7.**Incorrect string value: '\xAC\xED\x00\x05sr...' for column 'create_by'** 
+
+xm文件没有正确对应，实体类属性名错误（要和生成表时的属性名一致）
+
+
+

@@ -1957,6 +1957,61 @@ mybatis:
 尝试换一下配置文件，比如本来用的yaml，换成properties
 
 
+# 日志
+
+使用log4j
+
+**1.依赖**
+
+所有starter中的logging都需要去掉，只要去掉其中一个，并把它放在最前面就可以了。
+
+```java
+<dependency>
+            <groupId>org.mybatis.spring.boot</groupId>
+            <artifactId>mybatis-spring-boot-starter</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+```
+
+**2.配置xml**
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO" monitorInterval="1800">
+    <appenders>
+        <Console name="consolePrint" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss} [%t] %-5level %logger{36} - %msg%n" />
+        </Console>
+    </appenders>
+
+    <loggers>
+        <!-- 将业务dao接口填写进去,并用控制台输出即可 -->
+        <logger name="com.wocai.keyun.dao.bus" level="info" additivity="false">
+            <appender-ref ref="consolePrint"/>
+        </logger>
+
+        <root level="info">
+            <appender-ref ref="consolePrint" />
+        </root>
+    </loggers>
+</Configuration>
+
+```
+
+**3.配置路径**
+
+需要指定logging的xml文件路径，dao层接口的路径
+
+
+```properties
+logging.config=classpath:log4j2.xml
+logging.level.com.wocai.keyun.dao.bus = info
+mybatis.configuration.log-impl=org.apache.ibatis.logging.stdout.StdOutImpl
+```
+
 
 # 6.安全
 
@@ -3446,54 +3501,80 @@ public class SwaggerConfig {
 
 ![1589183301532](SpringBoot.assets/1589183301532.png)
 
-#### 实体类
+### 实体类
 
-定义一个user类
+先要在文档显示实体类，需要在controller返回实体类，
 
-然后在controller编写一个返回实体类的请求
+
+1.创建一个新的controller编写返回实体类的请求
+
+```java
+@RestController
+@Api(tags = "实体类")
+@RequestMapping("/entity")
+public class BusEntityController {
+
+    @ApiOperation("车辆")
+    @PostMapping("/BusCar")
+    public BusCar busCar(){
+        return new BusCar();
+    }
+
+    @ApiOperation("司机")
+    @PostMapping("/BusDriver")
+    public BusDriver busDriver(){
+        return new BusDriver();
+    }
+
+    ......
+}
 
 ```
-@GetMapping("/user")
-    public User user(){
-        return new User();
+
+
+
+2.实体类添加注释
+
+`@ApiModel("车站")`为实体类添加注释
+
+`@@ApiModelProperty("发班总数",example="")`为字段添加注释，注意，如果字段为**Integer类型**，需要添加example条件指定默认值，这边的example="0"只会在Swagger测试中默认，对正常的业务没有影响
+
+```java
+@ApiModel("路线")
+public class BusRoute implements Serializable {
+    private String id;
+    private String busStationId;
+    @ApiModelProperty("起点")
+    private String start;
+    @ApiModelProperty(value = "每日班次",example = "0")
+    private Integer time;
+```
+
+**返回的实体类就会显示在models上**，controller中部没有回的实体类不会出现在models上
+
+![20201011183859](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20201011183859.png)
+
+### 注释
+
+`@Api(tags="司机列表")`为controller类加注释
+
+`@ApiOperation("查询")`为controller的方法加注释
+
+
+```java
+@RestController
+@Api(value="车辆controller",tags={"车辆列表"})
+@RequestMapping("/car")
+public class BusCarController {
+
+    @ApiOperation("查询全部")
+    @PostMapping("/selectAll")
+    public Map<String,Object> selectAll(){
+       
     }
 ```
 
-测试
-
-![1589186138684](SpringBoot.assets/1589186138684.png)
-
-
-
-#### 注释
-
-> 为实体类添加注释
-
-```java
-//@ApiModel给实体类添加注释
-@ApiModel("用户")
-public class User implements Serializable {
-    private static final long serialVersionUID = -77061385939233351L;
-
-    private Integer id;
-
-//    @ApiModelProperty给属性添加注释
-    @ApiModelProperty("用户名")
-    private String username;
-
-    @ApiModelProperty("密码")
-    private String password;
-```
-
-![1589186516580](SpringBoot.assets/1589186516580.png)
-
-> 为controller加注释
-
-```
-//    ApiOperation 为controller的方法加注释
-    @ApiOperation("实体类")
-```
-
+![20201011184227](https://cdn.jsdelivr.net/gh/18258026861/image@master/image/20201011184227.png)
 
 
 ### 测试

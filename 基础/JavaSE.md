@@ -1,4 +1,4 @@
-设计结构
+# 设计结构
 
 ```java
 public class FirstDemo{
@@ -10,7 +10,7 @@ public class FirstDemo{
 
 **区分大小写**
 
-## **编写类名**
+**编写类名**
 
 - public 修饰符 
 
@@ -18,17 +18,17 @@ public class FirstDemo{
 
 - FirstDemo 类名
 
-##**方法**
+ **方法**
 
 - **main方法的修饰符必须是public,static**
 
-##**语句**
+ **语句**
 
-- .用于调用方法
+- 用于调用方法
   - object.method(parameters)
 - **分号**表示句子**结束**,回车不是结合苏标志,可以将多句写在一行
 
-## 注释
+**注释**
 
 三种标记注释
 
@@ -40,7 +40,7 @@ public class FirstDemo{
 
 {}:划分程序的各个部分,成对出现,空白符会被编译器忽略
 
-## 编译
+**编译**
 
 编译这段源代码后会得到一个包含这个**类字节码**的文件,编译器会自动命名成类名.class,并存储在源文件的同一目录下
 
@@ -1083,6 +1083,10 @@ continue跳过这一个条件,进入下一个条件
 
 
 
+
+
+
+
 > 自定义类
 
 ```java
@@ -1173,8 +1177,7 @@ public static void main(String[] args) {
 
 使用==关键字abstract==,可以将一个类或者方法定义为抽象,抽象的方法**不需要实现**;
 
-- 包含抽象方法的类**必须抽象**
-- 抽象类可以**不含抽象方法**
+- 抽象类可以**不含抽象方法**，但是**有抽象方法的必须是抽象类**
 - 抽象方法充当占位,在**子类中具体实现**
 - **抽象类不能被实例化**
   - 可以有抽象类型**引用非抽象的子类**
@@ -1185,6 +1188,18 @@ public static void main(String[] args) {
 
 - 当子类中的**抽象方法未实现**,那么这个**子类也必须是抽象类**
 - **抽象方法全部被实现**,子类不是抽象的
+- 抽象方法需要加上{},接口不用
+- 抽象类的方法可以是public ，protected
+
+
+
+### 抽象类和接口的区别
+
+- 抽象类前面必须加abstract修饰符，interface可加可不加（本身就是抽象的）
+
+- **抽象类单继承**，**接口多实现**
+- **抽象类可以有具体的属性和方法**，接口没有
+- 抽象类的方法可以使用pr otect修饰，接口不能
 
 
 
@@ -4637,7 +4652,7 @@ JDK8：底层使用数组+链表+红黑树，提高效率
 
 # I/O
 
-输入输出流**
+**输入输出流**
 
 输入流：从其中读入字节序列的对象
 
@@ -5621,6 +5636,457 @@ lambda表达式是一个**可传递的代码块**
 - FunctionInterface注解不是必须的,检查
 
 
+
+# 多线程
+
+## 基本概念
+
+**程序，进程，线程的区别**
+
+- 程序：一段静态的代码
+- 进程：**正在运行**的程序。有生命周期
+  - 系统会为进程分配资源
+- 线程：进程可进一步细化为线程，是程序内部执行的一条执行路线
+  - 线程作为调度和执行的单位，每个线程拥有独立的运行栈和程序计数器
+  - 一个java程序运行至少有三个线程：main（）线程，gc（垃圾回收）线程，异常处理线程
+
+
+
+**并行与并发**
+
+- 并行：**多个CPU**同时执行多个任务
+- 并发：**一个CPU**（时间片轮转）同时执行多个任务，即CPU切换多个线程同时执行任务
+
+
+
+**多线程的优点**
+
+当CPU为单核时，实际上多线程的执行会比单线程的时间面，因为切换线程也会消耗时间。
+
+- 当CPU为多核时，多线程的速度就会大大加快。
+
+- 提高CPU的利用率
+- 提高程序响应，增强用户体验
+- 修改程序结构，将复杂的程序分成多个线程，利于理解和修改
+
+
+
+## 线程的创建
+
+### Thread子类
+
+1.**创建一个多线程的类**，**继承Thread类**，并**重写run方法**
+
+```java
+//继承Thread的类
+public class threadTest extends Thread {
+
+    //重写Thread的方法
+    @Override
+    public void run() {
+        for (int i=0;i<2;i++){
+            System.out.println(Thread.currentThread().getName()+i);
+        }
+    }
+}
+```
+
+
+
+2.创建多线程对象并执行start方法
+
+**start方法会启动多线程并执行run方法**
+
+**注意**；直接执行run方法并不会开启多线程
+
+```java
+ threadTest threadTest = new threadTest();
+        //start: 1.开启线程 2.执行run方法
+        threadTest.start();
+        //如果执行线程方法run,并不会开启线程
+        //threadTest.run();
+
+		for (int i=0;i<2;i++){
+            System.out.println(Thread.currentThread().getName()+i);
+        }
+```
+
+![image-20200915172705653](JavaSE.assets/image-20200915172705653.png)
+
+截图看到有两个线程在工作：main和Thread
+
+
+
+3**.创建多个线程**
+
+**注意**：多个线程不能直接多个start，**一个线程对象只能创建一个多线程**
+
+可以创建多个类来执行多个不同的线程。如果只执行一次，可以使用匿名内部类
+
+```java
+		threadTest threadTest = new threadTest();
+        threadTest.start();
+       
+        threadTest t2 = new threadTest();
+        t2.start();
+```
+
+![image-20200915174932636](JavaSE.assets/image-20200915174932636.png)
+
+
+
+### 实现Runnable接口
+
+1.创建**实现Runnable接口**的类
+
+2.**实现run方法**
+
+```java
+public class SellRunnable implements Runnable {
+    public void run() {
+        //需要线程执行的内容
+    }
+}
+```
+
+3.**创建对象**，以**参数形式**放入Thread中，相当于用Runnable作为run方法塞给Thread实现线程安全
+
+```java
+//创建Runnable实现类的对象
+        SellRunnable sellRunnable = new SellRunnable();
+        //将对象作为参数传递到Thread的构造器中,作为Thread的run方法
+        Thread thread = new Thread(sellRunnable);
+      
+        thread.start();
+        
+```
+
+
+
+### 两种方法的比较
+
+使用**接口实现的方法比较好**，多实现可以有多个方法供选择，相当于一个插件，便于更换。
+
+多个线程使用一个runnable实现类可以**数据共享**
+
+**Thread本身也实现类Runnable接口**
+
+
+
+## Thread方法
+
+- 构造器
+
+  - 无参构造
+
+    - 当创建线程对象，由于没有写构造方法，就会调用父类Thread的无参构造器
+
+      **Thread类的无参构造器**
+
+      ```java
+      public Thread() {
+              init(null, null, "Thread-" + nextThreadNum(), 0);
+          }
+      
+      //创建多个线程，就会+1
+      private static int threadInitNumber;
+          private static synchronized int nextThreadNum() {
+              return threadInitNumber++;
+          }
+      ```
+
+  - 有参构造
+
+    - ![image-20200916101953836](JavaSE.assets/image-20200916101953836.png)
+
+- **start（）**：启动当前线程，并执行run方法
+
+- **run（）**：通常需要重写，将需要多线程完成的任务放在此方法中
+
+- **currentThread（）**：静态方法，返回当前线程
+
+- **setName（）**：设置线程名称
+
+- **getName（）**：获取线程名称 
+
+- **yield（）**：释放当前CPU的执行权，但是有可能后面还是这个线程
+
+- **join（）**：将线程A插入，原有线程阻塞，直到该线程执行完，结束阻塞
+
+  - ```java
+    for (int i=0;i<20;i++){
+        System.out.println(Thread.currentThread().getName()+i);
+        if(i==3){
+            try {
+                //在main线程执行到3的时候，将ThreadTest线程插入，知道该线程完成才继续执行main线程
+                threadTest.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    ```
+
+- **stop（）**：强制结束，不推荐
+- **sleep（long time）**：阻塞给定的时间（毫秒）
+- **isAlive（）**：查看当前线程是否存活，当线程在执行时，为true，线程执行完就死亡，为false
+  
+  - main的线程在执行时一直存活
+
+
+
+## 线程的调度
+
+> 调度方法
+
+**java的调度方法**：**同优先级线程**组成队列（先进先出），**采用时间片轮转**。**高优先级线程，采用抢先式调度**
+
+**时间片轮转**：先到先得
+
+**抢先式调度**：高优先级线程抢占CPU
+
+
+
+**线程优先级**：
+
+- MAX_PRIORITY=10      最大优先级10 
+- MIN_PRIORITY=1         最小优先级1
+- NORM_PRIORITY=5     普通的优先级5
+
+线程类创建**继承父类的优先级**
+
+低优先级只是**被调度的概率低**，并不绝对
+
+**main线程的优先级最高**，所以即使其他线程的优先级也是最高，**时间片轮转**，也是**main线程先执行**，main线程设置成最低优先级好像无效？
+
+
+
+> 线程调度的方法
+
+- **getPriority（）**：返回线程优先级
+- **setPriority(int priority)**:设置线程的优先级
+
+
+
+## 线程安全
+
+### 例子
+
+抛出一个例子，用**常规Thread的子类创建的线程**
+
+```java
+public class SellerThread extends Thread {
+    private static int tickets=100;
+    @Override
+    public void run() {
+        while(tickets>0){
+            System.out.println(Thread.currentThread().getName()+"售出票"+tickets);
+            tickets--;
+            //由于线程运行太快,需要加上释放.但是就会出现多个线程
+            yield();
+        }
+    }
+}
+
+//创建三个售票员共同卖完100张票
+		SellerThread seller1 = new SellerThread();
+        SellerThread seller2 = new SellerThread();
+        SellerThread seller3 = new SellerThread();
+
+        seller1.start();
+        seller2.start();
+        seller3.start();
+```
+
+结果发现有些售票员会出手同一张票，导致**线程不安全**
+
+![image-20200916150422248](JavaSE.assets/image-20200916150422248.png)
+
+
+
+**使用Runnable实现类**
+
+```java
+public class SellRunnable implements Runnable {
+    private int ticket = 100;
+
+    public void run() {
+        //需要线程执行的内容
+        while (ticket>0){
+            System.out.println(Thread.currentThread().getName()+":"+ticket);
+            ticket--;
+            Thread.yield();
+        }
+    }
+}
+
+		//创建Runnable实现类的对象
+        SellRunnable sellRunnable = new SellRunnable();
+        //将对象作为参数传递到Thread的构造器中,作为Thread的run方法
+        Thread thread = new Thread(sellRunnable);
+        Thread thread1 = new Thread(sellRunnable);
+        thread.start();
+        thread1.start();
+```
+
+**字段不需要加static**，因为两个线程使用的是同一参数run方法，但是线程还是不安全
+
+![image-20200916162450146](JavaSE.assets/image-20200916162450146.png)
+
+### 解决方法
+
+出现重票，错票的问题（线程问题）：
+
+**原因**：当一个线程在操作时，还未完成，其他线程进入也操作车票
+
+**如何解决**：加锁，线程在操作就上锁，其他线程无法进入。即使线程阻塞，也不能进入
+
+#### 1.同步代码块
+
+```java
+synchronized ( 监视器 ){ 将需要同步的代码包起来 }
+```
+
+**实现Runnable：**
+
+- 同步监视器
+  - synchronized的参数，作为锁，**任何对象都可以作为锁**
+  - 所有线程只能使用**同一把锁**，即锁要声明在run（）方法外面，也**可以使用this**（代表当前runnable的实现类），这也是个现成的对象
+    - 锁声明在run方法内部，多个线程就会创建多个锁，会失败，需要把锁放在外面
+- 同步代码
+  - synchroized方法的内容，即**操作共享数据的代码**，如例子中操作ticket的代码
+
+```java
+		
+
+
+//将需要同步的代码包起来，监视器可以是任意对象
+            synchronized(thread){
+                
+                System.out.println(Thread.currentThread().getName()+":"+ticket);
+                ticket--;
+                Thread.yield();
+            }
+```
+
+![image-20200918110819824](JavaSE.assets/image-20200918110819824.png)
+
+**继承Thread**
+
+修饰监听器为**static**，因为创建新的线程使用的run是独立的
+
+```java
+private static String ob;
+    @Override
+    public void run() {
+        while(tickets>0){
+            //线程同步
+            synchronized(ob) {
+                System.out.println(Thread.currentThread().getName() + "售出票" + tickets);
+                tickets--;
+                //由于线程运行太快,需要加上释放.但是就会出现多个线程
+                yield();
+            }
+        }
+    }
+```
+
+
+
+#### 2.同步方法
+
+**用synchronized修饰**的方法
+
+1.将想要同步的代码分离出来写到同步方法中再调用，方法的**监听锁就是this**
+
+
+
+```java
+public这个类 void run() {
+        while(ticket>0){
+            //将想要同步的这部分代码分离出来成为一个方法，用snchronized修饰，就是一个同步方法
+            /*System.out.println(Thread.currentThread().getName()+":"+ticket);
+            ticket--;
+            Thread.yield();*/
+            //调用同步方法
+            desc();
+        }
+    }
+
+    public synchronized void desc(){
+        System.out.println(Thread.currentThread().getName()+":"+ticket);
+        ticket--;
+        Thread.yield();
+    }
+```
+
+2.所以继承Thread使用这个方法就会出问题，所以继承的话还需要在方法前加**static**，**静态方法调用的this是当前类本身**
+
+**懒汉式的线程安全**
+
+```java
+//懒汉模式
+class Bank{
+    private Bank(){
+
+    }
+    //只声明，不创建
+    public static synchronized Bank bank = null;
+
+    //等到调用了再创建。
+    public static Bank getBank(){
+        if(bank == null){
+            Bank bank = new Bank();
+        }
+        return bank;
+    }
+}
+```
+
+在懒汉模式这个例子中，可以看成多个线程调用这个类。但是有个缺点，当第一个线程使用过getBank创建了一个bank后，其实后面的线程不用等着进去再判断，可以出个告示通知他们直接取bank就完事了。
+
+```java
+//这个效率更高
+        //其他线程如果看到已经创建了就不要排队再挤进去了，直接调用
+    public static  Bank getBank1(){
+        if (bank == null) {
+            synchronized(Bank.class) {
+                if (bank == null) {
+                    Bank bank = new Bank();
+                }
+            }
+        }
+        return bank;
+    }
+```
+
+
+
+
+
+## 生命周期
+
+**五种状态**
+
+- 新建状态:**NEW**
+  - 线程对象创建后，就进入了新建状态
+- 就绪状态:**RUNNABLE**
+  - 当 线程对象**调用start方法**，进入就绪状态。随时**等待CUP调度执行**
+  - 调用start方法并不会立即执行，而是等CUP调度
+  - **就绪状态是进入运行状态的唯一入口**
+- 运行状态:**Running**
+  - CPU开始调度，进入运行状态
+  - **只有处于就绪状态下才能进入运行状态**
+- 阻塞状态：**Blocked**
+  - 运行状态中的线程由于某些原因，暂时放弃对CPU的使用，停止执行。
+  - 该状态下不能再次进入运行状态，需要通过就绪状态才能再次被执行。
+  - **三种阻塞状态**
+    - 等待阻塞：运行状态中执行**wait（）方法**。notify唤醒线程进入就绪
+    - 同步阻塞：线程获取synchronized同步锁失败，**被其他线程占用**，获得同步锁，进入就绪状态
+    - 其他阻塞：调用**sleep（）**或**join（）**或发出I/O请求。当这些**执行完**，线程就会**重新进入就绪状态**
+- 死亡状态：**Dead**
+  - 线程执行完或因异常退出了run（）方法，结束了生命周期
+
+![img](https://img-blog.csdnimg.cn/20181219233801255)
 
 
 
